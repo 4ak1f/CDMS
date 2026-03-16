@@ -2,3 +2,9 @@ venv/
 __pycache__/
 *.pyc
 uploads/
+logs/cdms.db
+model_training/dataset/
+model_training/checkpoints/best_model.pth
+yolov8n.pt
+*.zip
+*.mat
