@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CDMS — Crowd Disaster Management System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; }
+
+    header {
+      background: linear-gradient(135deg, #1a1f2e, #2d3561);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 2px solid #3d4f7c;
+    }
+    header h1 { font-size: 1.6rem; color: #ffffff; }
+    header p { color: #8892b0; font-size: 0.85rem; margin-top: 4px; }
+    .badge {
+      background: #e74c3c;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px; }
+    @media(max-width:768px){ .grid{ grid-template-columns:1fr; } }
+
+    .card {
+      background: #1a1f2e;
+      border: 1px solid #2d3561;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card h2 { font-size: 1rem; color: #8892b0; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .upload-area {
+      border: 2px dashed #3d4f7c;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .upload-area:hover { border-color: #64ffda; background: #1e2740; }
+    .upload-area input { display: none; }
+    .upload-area label { cursor: pointer; color: #64ffda; font-size: 0.95rem; }
+    .upload-area p { color: #8892b0; font-size: 0.8rem; margin-top: 8px; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary { background: #64ffda; color: #0f1117; }
+    .btn-primary:hover { background: #4edbb8; }
+    .btn-primary:disabled { background: #2d3561; color: #8892b0; cursor: not-allowed; }
+
+    .result-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      display: none;
+    }
+    .result-safe    { background: #0d2818; border: 1px solid #2ecc71; }
+    .result-warning { background: #2d1f00; border: 1px solid #f39c12; }
+    .result-danger  { background: #2d0000; border: 1px solid #e74c3c; }
+
+    .risk-label {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .safe    { color: #2ecc71; }
+    .warning { color: #f39c12; }
+    .danger  { color: #e74c3c; }
+
+    .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+    .stat { background: #0f1117; padding: 10px 16px; border-radius: 8px; text-align: center; }
+    .stat span { display: block; font-size: 1.4rem; font-weight: bold; color: #64ffda; }
+    .stat p { font-size: 0.75rem; color: #8892b0; margin-top: 4px; }
+
+    #annotated-img { width: 100%; border-radius: 8px; margin-top: 16px; display: none; }
+
+    .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .history-table th { background: #2d3561; padding: 10px; text-align: left; color: #8892b0; }
+    .history-table td { padding: 10px; border-bottom: 1px solid #1e2740; }
+    .history-table tr:hover { background: #1e2740; }
+
+    .loading { text-align: center; padding: 20px; color: #8892b0; display: none; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #2d3561;
+      border-top: 3px solid #64ffda;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .full-width { grid-column: 1 / -1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🚨 Crowd Disaster Management System</h1>
+    <p>AI-powered crowd monitoring and early warning system</p>
+  </div>
+  <div class="badge">LIVE MONITOR</div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- Image Analysis Card -->
+    <div class="card">
+      <h2>📷 Image Analysis</h2>
+      <div class="upload-area" onclick="document.getElementById('imgInput').click()">
+        <input type="file" id="imgInput" accept="image/*" onchange="previewImage(event)"/>
+        <label>Click to upload an image</label>
+        <p>JPG, PNG supported</p>
+      </div>
+      <button class="btn btn-primary" id="imgBtn" onclick="analyzeImage()" disabled>Analyze Image</button>
+
+      <div class="loading" id="imgLoading">
+        <div class="spinner"></div>
+        <p>Running detection...</p>
+      </div>
+
+      <div class="result-box" id="imgResult">
+        <div class="risk-label" id="imgRisk"></div>
+        <p id="imgMessage" style="color:#ccc; margin-bottom:12px;"></p>
+        <div class="stats">
+          <div class="stat"><span id="imgCount">0</span><p>People Detected</p></div>
+          <div class="stat"><span id="imgDensity">0</span><p>Density Score</p></div>
+        </div>
+        <img id="annotated-img" alt="Annotated Result"/>
+      </div>
+    </div>
+
+    <!-- Video Analysis Card -->
+    <div class="card">
+      <h2>🎥 Video Analysis</h2>
+      <div class="upload-area" onclick="document.getElementById('vidInput').click()">
+        <input type="file" id="vidInput" accept="video/*" onchange="enableVideoBtn()"/>
+        <label>Click to upload a video</label>
+        <p>MP4, AVI, MOV supported</p>
+      </div>
+      <button class="btn btn-primary" id="vidBtn" onclick="analyzeVideo()" disabled>Analyze Video</button>
+
+      <div class="loading" id="vidLoading">
+        <div class="spinner"></div>
+        <p>Processing video frames...</p>
+      </div>
+
+      <div class="result-box" id="vidResult">
+        <div class="risk-label" id="vidRisk"></div>
+        <div class="stats">
+          <div class="stat"><span id="vidFrames">0</span><p>Frames Analyzed</p></div>
+          <div class="stat"><span id="vidAvgCount">0</span><p>Avg People</p></div>
+          <div class="stat"><span id="vidMaxCount">0</span><p>Peak People</p></div>
+          <div class="stat"><span id="vidDanger">0</span><p>Danger Frames</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detection History -->
+    <div class="card full-width">
+      <h2>📊 Detection History</h2>
+      <button class="btn btn-primary" style="width:auto;padding:8px 20px;margin-bottom:16px;" onclick="loadHistory()">Refresh History</button>
+      <div style="overflow-x:auto;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>People</th>
+              <th>Density</th>
+              <th>Risk Level</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr><td colspan="5" style="color:#8892b0;text-align:center;">Click Refresh History to load data</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let imageFile = null;
+  let videoFile = null;
+
+  function previewImage(e) {
+    imageFile = e.target.files[0];
+    document.getElementById('imgBtn').disabled = false;
+  }
+
+  function enableVideoBtn() {
+    videoFile = document.getElementById('vidInput').files[0];
+    document.getElementById('vidBtn').disabled = false;
+  }
+
+  async function analyzeImage() {
+    if (!imageFile) return;
+    document.getElementById('imgLoading').style.display = 'block';
+    document.getElementById('imgResult').style.display = 'none';
+    document.getElementById('imgBtn').disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    try {
+      const res = await fetch('/analyze/image', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      const risk = data.risk_level;
+      const riskEl = document.getElementById('imgRisk');
+      riskEl.textContent = risk;
+      riskEl.className = 'risk-label ' + risk.toLowerCase();
+
+      document.getElementById('imgMessage').textContent = data.message;
+      document.getElementById('imgCount').textContent = data.person_count;
+      document.getElementById('imgDensity').textContent = data.density_score;
+
+      const resultBox = document.getElementById('imgResult');
+      resultBox.className = 'result-box result-' + risk.toLowerCase();
+      resultBox.style.display = 'block';
+
+      if (data.annotated_image) {
+        const img = document.getElementById('annotated-img');
+        img.src = 'data:image/jpeg;base64,' + data.annotated_image;
+        img.style.display = 'block';
+      }
+    } catch(e) {
+      alert('Error analyzing image. Make sure the server is running.');
+    }
+
+    document.getElementById('imgLoading').style.display = 'none';
+    document.getElementById('imgBtn').disabled = false;
+  }
+
+  async function analyzeVideo() {
+    if (!videoFile) return;
+    document.getElementById('vidLoading').style.display = 'block';
+    document.getElementById('vidResult').style.display = 'none';
+    document.getElementById('vidBtn').disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', videoFile);
+
+    try {
+      const res = await fetch('/analyze/video', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      const risk = data.overall_risk;
+      const riskEl = document.getElementById('vidRisk');
+      riskEl.textContent = 'Overall Risk: ' + risk;
+      riskEl.className = 'risk-label ' + risk.toLowerCase();
+
+      document.getElementById('vidFrames').textContent = data.frames_analyzed;
+      document.getElementById('vidAvgCount').textContent = data.avg_person_count;
+      document.getElementById('vidMaxCount').textContent = data.max_person_count;
+      document.getElementById('vidDanger').textContent = data.danger_frames;
+
+      const resultBox = document.getElementById('vidResult');
+      resultBox.className = 'result-box result-' + risk.toLowerCase();
+      resultBox.style.display = 'block';
+    } catch(e) {
+      alert('Error analyzing video. Make sure the server is running.');
+    }
+
+    document.getElementById('vidLoading').style.display = 'none';
+    document.getElementById('vidBtn').disabled = false;
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await fetch('/history');
+      const data = await res.json();
+      const tbody = document.getElementById('historyBody');
+
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#8892b0;text-align:center;">No detections yet</td></tr>';
+        return;
+      }
+
+      const riskColors = { SAFE: '#2ecc71', WARNING: '#f39c12', DANGER: '#e74c3c' };
+
+      tbody.innerHTML = data.map(row => `
+        <tr>
+          <td>${row.timestamp}</td>
+          <td>${row.person_count}</td>
+          <td>${row.density_score}</td>
+          <td style="color:${riskColors[row.risk_level]};font-weight:bold;">${row.risk_level}</td>
+          <td>${row.message}</td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      alert('Could not load history.');
+    }
+  }
+</script>
+
+</body>
+</html>
