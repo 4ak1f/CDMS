@@ -1,3 +1,11 @@
+---
+title: CDMS - Crowd Disaster Management System
+emoji: 🚨
+colorFrom: red
+colorTo: blue
+sdk: docker
+pinned: true
+---
 # Crowd Disaster Management System (CDMS)
 
 An AI-powered crowd monitoring system that detects dangerous crowd density levels in real-time using Computer Vision and Deep Learning.
