@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#00d4ff"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="CDMS"/>
+  <link rel="manifest" href="/mobile/manifest.json"/>
+  <link rel="stylesheet" href="/mobile/styles.css"/>
+  <title>CDMS — Crowd Safety</title>
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash">
+  <div class="splash-logo">🚨</div>
+  <div class="splash-title">CDMS</div>
+  <div class="splash-sub">Crowd Disaster Management System</div>
+  <div class="splash-loader">
+    <div class="splash-loader-bar"></div>
+  </div>
+</div>
+
+<!-- Alert Banner -->
+<div class="alert-banner" id="alertBanner">
+  <div class="alert-title">🚨 DANGER ALERT</div>
+  <div class="alert-msg" id="alertMsg">Critical crowd density detected!</div>
+</div>
+
+<!-- Header -->
+<header class="app-header">
+  <div class="header-logo">
+    <div class="header-icon">🚨</div>
+    <div>
+      <div class="header-title">CDMS</div>
+      <div class="header-sub">Crowd Safety Monitor</div>
+    </div>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE
+  </div>
+</header>
+
+<!-- ── HOME PAGE ── -->
+<div class="page active" id="page-home">
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal" style="color:#00d4ff">0</div>
+      <div class="stat-label">Detections</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statAlerts" style="color:#ff3b5c">0</div>
+      <div class="stat-label">Alerts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statAvg" style="color:#00ff88">0</div>
+      <div class="stat-label">Avg Crowd</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statPeak" style="color:#ff9500">0</div>
+      <div class="stat-label">Peak Count</div>
+    </div>
+  </div>
+
+  <!-- Risk Display -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚠️ Current Risk Level</span>
+    </div>
+    <div class="risk-display">
+      <div class="risk-ring-wrap">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="68"
+            fill="none" stroke="rgba(30,45,74,0.5)" stroke-width="10"/>
+          <circle id="riskCircle" cx="80" cy="80" r="68"
+            fill="none" stroke="#00ff88" stroke-width="10"
+            stroke-linecap="round"
+            stroke-dasharray="427.26"
+            stroke-dashoffset="320.44"
+            style="transition: all 1s ease;"/>
+        </svg>
+        <div class="risk-count">
+          <div class="risk-number" id="riskNumber">0</div>
+          <div class="risk-sub">people</div>
+        </div>
+      </div>
+      <div class="risk-label" id="riskLabel" style="color:#00ff88">ALL CLEAR</div>
+      <div class="risk-message" id="riskMessage">System ready. Use camera or upload media.</div>
+    </div>
+  </div>
+
+  <!-- Zone Monitor -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🗺️ Zone Monitor</span>
+      <span style="font-size:0.65rem;color:#64748b;">3×3 Grid</span>
+    </div>
+    <div class="card-body">
+      <div class="zone-grid" id="zoneGrid">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── CAMERA PAGE ── -->
+<div class="page" id="page-camera">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📹 Live Camera</span>
+    </div>
+    <div class="card-body">
+
+      <div class="camera-wrap">
+        <video id="cameraFeed" playsinline muted autoplay></video>
+        <canvas id="resultCanvas"></canvas>
+
+        <div class="rec-indicator">
+          <div class="rec-dot"></div>
+          ANALYZING
+        </div>
+
+        <div class="camera-overlay" id="cameraOverlay" style="display:none;">
+          <div id="overlayCount" style="font-weight:700;color:#fff;font-size:0.8rem;">👥 0</div>
+          <div id="overlayRisk"  style="font-size:0.7rem;color:#00ff88;font-weight:700;">SAFE</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn btn-primary" id="startCamBtn" onclick="startCamera()">
+          ▶ Start Live Analysis
+        </button>
+        <button class="btn btn-danger" id="stopCamBtn" onclick="stopCamera()" style="display:none;">
+          ⏹ Stop Camera
+        </button>
+      </div>
+
+      <p style="font-size:0.72rem;color:#64748b;text-align:center;margin-top:8px;">
+        Point camera at a crowd for real-time AI analysis
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── ANALYZE PAGE ── -->
+<div class="page" id="page-analyze">
+
+  <!-- Image Analysis -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📷 Image Analysis</span>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" onclick="triggerImageUpload()">
+        <input type="file" id="imageInput" accept="image/*" style="display:none"
+               onchange="analyzeImage(this)"/>
+        <div class="upload-icon">🖼️</div>
+        <div class="upload-text">Tap to upload image</div>
+        <div class="upload-sub">JPG, PNG supported</div>
+      </div>
+
+      <button class="btn btn-primary" id="imageUploadBtn" onclick="triggerImageUpload()">
+        🔍 Analyze Image
+      </button>
+
+      <div class="result-box" id="imageResult">
+        <div class="result-risk" id="imageRisk">--</div>
+        <p style="color:#64748b;font-size:0.78rem;margin-bottom:10px;" id="imageMsg"></p>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="imageCount">0</div>
+            <div class="mini-stat-label">People</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="imageDensity">0</div>
+            <div class="mini-stat-label">Density</div>
+          </div>
+        </div>
+        <img id="annotatedImg" class="result-img" style="display:none;" alt="Result"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Analysis -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🎥 Video Analysis</span>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" onclick="triggerVideoUpload()">
+        <input type="file" id="videoInput" accept="video/*" style="display:none"
+               onchange="analyzeVideo(this)"/>
+        <div class="upload-icon">🎬</div>
+        <div class="upload-text">Tap to upload video</div>
+        <div class="upload-sub">MP4, MOV supported</div>
+      </div>
+
+      <div class="progress-wrap" id="videoProgressWrap" style="display:none;">
+        <div class="progress-label">
+          <span>Processing frames...</span>
+          <span id="videoProgressPct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="videoProgress"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="videoUploadBtn" onclick="triggerVideoUpload()">
+        🎬 Analyze Video
+      </button>
+
+      <div class="result-box" id="videoResult">
+        <div class="result-risk" id="videoRisk">--</div>
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="videoFrames">0</div>
+            <div class="mini-stat-label">Frames</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="videoAvg">0</div>
+            <div class="mini-stat-label">Avg People</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="videoPeak">0</div>
+            <div class="mini-stat-label">Peak</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="videoDanger" style="color:#ff3b5c">0</div>
+            <div class="mini-stat-label">⚠ Frames</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── HISTORY PAGE ── -->
+<div class="page" id="page-history">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📋 Detection History</span>
+      <button onclick="loadHistory()"
+        style="font-size:0.72rem;color:#64748b;background:none;border:1px solid #1e2d4a;
+               border-radius:8px;padding:4px 10px;cursor:pointer;color:#e2e8f0;">
+        ↻ Refresh
+      </button>
+    </div>
+    <div class="card-body" id="historyList">
+      <p style="color:#64748b;text-align:center;padding:20px;">Loading...</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📄 Incident Reports</span>
+    </div>
+    <div class="card-body">
+      <button class="btn btn-ghost" id="reportBtn" onclick="generateReport()">
+        📄 Generate Report
+      </button>
+      <p style="font-size:0.72rem;color:#64748b;text-align:center;">
+        Auto-generates PDF + sends email alert
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── ABOUT PAGE ── -->
+<div class="page" id="page-about">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🧠 Model Performance</span>
+    </div>
+    <div class="card-body">
+      <div class="metric-row">
+        <span class="metric-name">Model Architecture</span>
+        <span class="metric-value">VGG16 + Dilated CNN</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">MAE (Mean Absolute Error)</span>
+        <span class="metric-value">13.41</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">RMSE</span>
+        <span class="metric-value">20.44</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Training Dataset</span>
+        <span class="metric-value">ShanghaiTech + JHU</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Training Images</span>
+        <span class="metric-value">3,472</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Parameters</span>
+        <span class="metric-value">9.2M</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚙️ System Features</span>
+    </div>
+    <div class="card-body">
+      <div class="metric-row">
+        <span class="metric-name">Person Detection</span>
+        <span class="metric-value" style="color:#00ff88">✅ YOLOv8</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Density Estimation</span>
+        <span class="metric-value" style="color:#00ff88">✅ Custom CNN</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Zone Monitoring</span>
+        <span class="metric-value" style="color:#00ff88">✅ 3×3 Grid</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Flow Detection</span>
+        <span class="metric-value" style="color:#00ff88">✅ Optical Flow</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">PDF Reports</span>
+        <span class="metric-value" style="color:#00ff88">✅ Auto-generated</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Email Alerts</span>
+        <span class="metric-value" style="color:#00ff88">✅ Gmail SMTP</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-name">Deployment</span>
+        <span class="metric-value" style="color:#00ff88">✅ Hugging Face</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🔗 Links</span>
+    </div>
+    <div class="card-body">
+      <a href="https://huggingface.co/spaces/4AK1F/CDMS" target="_blank"
+         style="display:block;padding:12px;background:rgba(0,212,255,0.08);
+                border:1px solid rgba(0,212,255,0.2);border-radius:10px;
+                color:#00d4ff;text-decoration:none;font-size:0.82rem;
+                text-align:center;margin-bottom:8px;">
+        🤗 Live Dashboard
+      </a>
+      <a href="https://huggingface.co/4AK1F/CDMS-crowd-counting" target="_blank"
+         style="display:block;padding:12px;background:rgba(0,212,255,0.08);
+                border:1px solid rgba(0,212,255,0.2);border-radius:10px;
+                color:#00d4ff;text-decoration:none;font-size:0.82rem;
+                text-align:center;margin-bottom:8px;">
+        🧠 Model on Hugging Face
+      </a>
+      <a href="https://github.com/4ak1f/CDMS" target="_blank"
+         style="display:block;padding:12px;background:rgba(0,212,255,0.08);
+                border:1px solid rgba(0,212,255,0.2);border-radius:10px;
+                color:#00d4ff;text-decoration:none;font-size:0.82rem;
+                text-align:center;">
+        💻 GitHub Repository
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="navigate('home')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </button>
+  <button class="nav-item" id="nav-camera" onclick="navigate('camera')">
+    <span class="nav-icon">📹</span>
+    <span class="nav-label">Camera</span>
+  </button>
+  <button class="nav-item" id="nav-analyze" onclick="navigate('analyze')">
+    <span class="nav-icon">🔍</span>
+    <span class="nav-label">Analyze</span>
+  </button>
+  <button class="nav-item" id="nav-history" onclick="navigate('history')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">History</span>
+  </button>
+  <button class="nav-item" id="nav-about" onclick="navigate('about')">
+    <span class="nav-icon">ℹ️</span>
+    <span class="nav-label">About</span>
+  </button>
+</nav>
+
+<script src="/mobile/app.js"></script>
+</body>
+</html>

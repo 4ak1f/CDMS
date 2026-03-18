@@ -31,6 +31,7 @@ app.add_middleware(
 
 # Serve frontend files
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
+app.mount("/mobile", StaticFiles(directory="pwa"), name="pwa")
 
 # Initialize database and load model on startup
 init_db()
@@ -144,7 +145,7 @@ async def analyze_image(file: UploadFile = File(...)):
     if frame is None:
         return JSONResponse({"error": "Invalid image file"}, status_code=400)
 
-    annotated_frame, density_result, zones, alert = process_frame(frame)
+    annotated_frame, density_result, zones, alert, flow_result = process_frame(frame)
 
     # Encode annotated frame
     _, buffer = cv2.imencode(".jpg", annotated_frame)
@@ -176,9 +177,14 @@ async def analyze_video(file: UploadFile = File(...)):
         f.write(await file.read())
 
     cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        cap = cv2.VideoCapture(video_path, cv2.CAP_FFMPEG)
+    if not cap.isOpened():
+        return JSONResponse({"error": "Could not open video file."}, status_code=400)
+
     frame_results = []
     frame_num = 0
-    max_frames = 60
+    max_frames = 20
 
     while cap.isOpened() and len(frame_results) < max_frames:
         ret, frame = cap.read()
@@ -188,7 +194,7 @@ async def analyze_video(file: UploadFile = File(...)):
         if frame_num % 10 != 0:
             continue
 
-        _, density_result, zones, _ = process_frame(frame)
+        _, density_result, zones, _, _ = process_frame(frame)
         frame_results.append(density_result)
 
     cap.release()

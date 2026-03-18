@@ -44,6 +44,11 @@ class CrowdFlowDetector:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         h, w = gray.shape
 
+# Reset if frame size changed
+        if self.prev_frame is not None and self.prev_frame.shape != gray.shape:
+            self.prev_frame = None
+            self.prev_points = None
+
         result = {
             "direction": "Unknown",
             "angle": 0.0,

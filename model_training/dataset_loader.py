@@ -126,3 +126,146 @@ def get_dataloaders(data_path, part="A", batch_size=4, image_size=(512, 512)):
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
 
     return train_loader, test_loader
+def get_combined_dataloaders(data_path, batch_size=4, image_size=(512, 512)):
+    """
+    Combines ShanghaiTech Part A and Part B for training.
+    Part A = ultra dense crowds
+    Part B = moderate crowds
+    Together = much better generalisation
+    """
+    from torch.utils.data import ConcatDataset
+
+    # Load both parts
+    train_a = ShanghaiTechDataset(data_path, part="A", split="train", image_size=image_size)
+    train_b = ShanghaiTechDataset(data_path, part="B", split="train", image_size=image_size)
+
+    # Combine training sets
+    combined_train = ConcatDataset([train_a, train_b])
+
+    # Keep test sets separate for proper evaluation
+    test_a = ShanghaiTechDataset(data_path, part="A", split="test", image_size=image_size)
+    test_b = ShanghaiTechDataset(data_path, part="B", split="test", image_size=image_size)
+    combined_test = ConcatDataset([test_a, test_b])
+
+    train_loader = DataLoader(combined_train, batch_size=batch_size, shuffle=True, num_workers=0)
+    test_loader  = DataLoader(combined_test,  batch_size=1,          shuffle=False, num_workers=0)
+
+    print(f"Combined training set: {len(combined_train)} images")
+    print(f"Combined test set:     {len(combined_test)} images")
+
+    return train_loader, test_loader
+class JHUCrowdDataset(Dataset):
+    """
+    PyTorch Dataset for JHU-Crowd++ crowd counting.
+    Ground truth format: x y width height class occlusion
+    One person per line in .txt files.
+    """
+
+    def __init__(self, data_path, split="train", image_size=(512, 512)):
+        self.image_size = image_size
+        self.samples = []
+
+        img_dir = os.path.join(data_path, split, "images")
+        gt_dir  = os.path.join(data_path, split, "gt")
+
+        if not os.path.exists(img_dir):
+            raise FileNotFoundError(f"JHU dataset not found at {img_dir}")
+
+        for img_file in sorted(os.listdir(img_dir)):
+            if not img_file.endswith(".jpg"):
+                continue
+            img_id   = os.path.splitext(img_file)[0]
+            gt_path  = os.path.join(gt_dir,  f"{img_id}.txt")
+            img_path = os.path.join(img_dir, img_file)
+
+            if os.path.exists(gt_path):
+                self.samples.append((img_path, gt_path))
+
+        print(f"Loaded {len(self.samples)} samples from JHU-Crowd++ {split} set")
+
+        self.transform = transforms.Compose([
+            transforms.Resize(image_size),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path, gt_path = self.samples[idx]
+
+        # Load image
+        image    = Image.open(img_path).convert("RGB")
+        orig_w, orig_h = image.size
+
+        # Load ground truth points from txt file
+        points = []
+        with open(gt_path, "r") as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 2:
+                    x, y = float(parts[0]), float(parts[1])
+                    points.append([x, y])
+
+        points = np.array(points) if points else np.zeros((0, 2))
+
+        # Generate density map
+        density_map = generate_density_map((orig_h, orig_w), points)
+
+        # Resize density map
+        target_h = self.image_size[0] // 8
+        target_w = self.image_size[1] // 8
+        density_map_resized = scipy.ndimage.zoom(
+            density_map,
+            (target_h / orig_h, target_w / orig_w),
+            order=1
+        )
+
+        # Scale so sum equals person count
+        if density_map_resized.sum() > 0 and len(points) > 0:
+            density_map_resized = density_map_resized * (len(points) / density_map_resized.sum())
+
+        image_tensor   = self.transform(image)
+        density_tensor = torch.tensor(density_map_resized, dtype=torch.float32).unsqueeze(0)
+
+        return image_tensor, density_tensor, len(points)
+def get_all_dataloaders(shanghai_path, jhu_path, batch_size=4, image_size=(512, 512)):
+    """
+    Combines ALL datasets:
+    - ShanghaiTech Part A (ultra dense)
+    - ShanghaiTech Part B (moderate)
+    - JHU-Crowd++ (diverse real world)
+    Total: ~2000+ training images
+    """
+    from torch.utils.data import ConcatDataset
+
+    print("Loading all datasets...")
+
+    # ShanghaiTech
+    train_a = ShanghaiTechDataset(shanghai_path, part="A", split="train", image_size=image_size)
+    train_b = ShanghaiTechDataset(shanghai_path, part="B", split="train", image_size=image_size)
+
+    # JHU-Crowd++
+    train_jhu = JHUCrowdDataset(jhu_path, split="train", image_size=image_size)
+    val_jhu   = JHUCrowdDataset(jhu_path, split="val",   image_size=image_size)
+
+    # Combine everything
+    combined_train = ConcatDataset([train_a, train_b, train_jhu, val_jhu])
+
+    # Test sets
+    test_a   = ShanghaiTechDataset(shanghai_path, part="A", split="test", image_size=image_size)
+    test_b   = ShanghaiTechDataset(shanghai_path, part="B", split="test", image_size=image_size)
+    test_jhu = JHUCrowdDataset(jhu_path, split="test", image_size=image_size)
+    combined_test = ConcatDataset([test_a, test_b, test_jhu])
+
+    train_loader = DataLoader(combined_train, batch_size=batch_size, shuffle=True,  num_workers=0)
+    test_loader  = DataLoader(combined_test,  batch_size=1,          shuffle=False, num_workers=0)
+
+    print(f"✅ Total training images: {len(combined_train)}")
+    print(f"✅ Total test images:     {len(combined_test)}")
+
+    return train_loader, test_loader

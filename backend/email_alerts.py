@@ -120,8 +120,11 @@ def send_danger_alert(person_count, density_score, risk_level, message, report_p
         # Send via Gmail SMTP
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
-
+            server.sendmail(
+                SENDER_EMAIL,
+                RECEIVER_EMAIL,
+                msg.as_string().encode('utf-8')
+    )
         print(f"✅ Alert email sent to {RECEIVER_EMAIL}")
         return True
 

@@ -7,12 +7,13 @@ import json
 import matplotlib.pyplot as plt
 from model_training.model import CrowdCountingModel
 from model_training.dataset_loader import get_dataloaders
-
+from model_training.dataset_loader import get_all_dataloaders
 # ── Configuration ──────────────────────────────────────────────
 DATASET_PATH = "model_training/dataset/ShanghaiTech"
-PART         = "B"          # Part B = moderate crowds, more achievable
-BATCH_SIZE   = 4
-EPOCHS       = 50
+JHU_PATH      = "model_training/dataset/jhu_crowd_v2.0"
+PART         = "A"  # Will train on both A and B
+EPOCHS       = 70
+BATCH_SIZE   = 4    
 LR           = 1e-5         # Lower LR works better with pretrained weights
 IMAGE_SIZE   = (512, 512)
 CHECKPOINT   = "model_training/checkpoints/best_model.pth"
@@ -37,8 +38,9 @@ def train():
 
     # Load data
     print("📂 Loading ShanghaiTech dataset...")
-    train_loader, test_loader = get_dataloaders(
-        DATASET_PATH, part=PART,
+    train_loader, test_loader = get_all_dataloaders(
+        DATASET_PATH,
+        JHU_PATH,
         batch_size=BATCH_SIZE,
         image_size=IMAGE_SIZE
     )
