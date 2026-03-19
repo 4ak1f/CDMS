@@ -200,7 +200,8 @@ async function startCamera() {
     document.getElementById('cameraOverlay').style.display = 'block'
 
     // Connect WebSocket
-    const wsUrl = API_BASE.replace('http', 'ws') + '/ws/webcam'
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws/webcam`
     state.ws = new WebSocket(wsUrl)
 
     state.ws.onopen = () => {

@@ -1,14 +1,14 @@
 from backend.flow_detection import CrowdFlowDetector
 from backend.report_generator import generate_incident_report
 from backend.email_alerts import send_danger_alert
-from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from backend.detector import detect_people
 from backend.density import estimate_density
 from backend.alerts import generate_alert, get_recent_alerts
-from backend.database import init_db, log_detection, get_all_detections
+from backend.database import init_db, log_detection, get_all_detections, get_thresholds, save_thresholds
 from backend.crowd_model import (
     load_model, generate_density_map,
     generate_heatmap, overlay_heatmap,
@@ -57,10 +57,21 @@ def process_frame(frame):
     # Step 1: Primary engine
     density_map, model_count = generate_density_map(crowd_model, model_device, frame)
 
-    # Step 2: YOLO fallback
+# Step 2: YOLO detection
     _, yolo_count, _ = detect_people(frame)
-    final_count = max(model_count, float(yolo_count))
 
+# Smart switching logic:
+# - For sparse crowds (< 20 people): trust YOLO more
+# - For dense crowds (20+ people): trust density model more
+    if yolo_count <= 20:
+    # YOLO is more reliable for sparse scenes
+        final_count = float(yolo_count)
+    elif yolo_count > 20 and model_count > yolo_count:
+    # Dense crowd — use density model
+        final_count = model_count
+    else:
+    # Use average of both
+        final_count = (model_count + float(yolo_count)) / 2
     # Step 3: Heatmap
     heatmap = generate_heatmap(density_map, frame.shape)
     heatmap_frame = overlay_heatmap(frame, heatmap, alpha=0.45)
@@ -73,21 +84,19 @@ def process_frame(frame):
     flow_result, annotated_frame = flow_detector.detect_flow(annotated_frame)
 
     # Step 6: Risk classification
-    density_result = estimate_density(int(final_count), w, h)
-    zone_risks = [z["risk"] for z in zones]
-    if "DANGER" in zone_risks or flow_result.get("surge_detected"):
-        density_result["risk_level"] = "DANGER"
-        density_result["color"] = "red"
-        density_result["message"] = "CRITICAL: Dangerous crowd density detected!"
-    elif "WARNING" in zone_risks:
-        if density_result["risk_level"] == "SAFE":
-            density_result["risk_level"] = "WARNING"
-            density_result["color"] = "orange"
-            density_result["message"] = "WARNING: High crowd density in one or more zones."
+    thresholds = get_thresholds()
+    danger_label = thresholds["danger_label"]
+    warning_label = thresholds["warning_label"]
+    density_result = estimate_density(int(final_count), w, h, thresholds)
 
+    zone_risks = [z["risk"] for z in zones]
+    if flow_result.get("surge_detected"):
+        density_result["risk_level"] = danger_label
+        density_result["color"] = "red"
+        density_result["message"] = f"ALERT: {danger_label} — Surge detected!"
     # Step 7: Draw info overlay
     risk = density_result["risk_level"]
-    risk_colors_cv = {"SAFE": (0,255,0), "WARNING": (0,165,255), "DANGER": (0,0,255)}
+    risk_colors_cv = {"SAFE": (0,255,0), "WARNING": (0,165,255), "DANGER": (0,0,255), "OVERCROWDED": (0,0,255)}
     color = risk_colors_cv.get(risk, (255,255,255))
     cv2.rectangle(annotated_frame, (0, 0), (w, 55), (0,0,0), -1)
     cv2.putText(annotated_frame, f"People: {int(final_count)}", (10, 25),
@@ -342,3 +351,25 @@ async def manual_report():
         density_score=latest["density_score"]
     )
     return {"message": "Report generated", "filename": filename}
+@app.get("/thresholds")
+def get_threshold_settings():
+    """Returns current threshold settings."""
+    return get_thresholds()
+
+
+@app.post("/thresholds")
+async def update_thresholds(request: Request):
+    """Updates threshold settings."""
+    from fastapi import Request
+    body = await request.json()
+    warning = float(body.get("warning_threshold", 2.0))
+    danger  = float(body.get("danger_threshold",  5.0))
+
+    if warning <= 0 or danger <= 0 or warning >= danger:
+        return JSONResponse(
+            {"error": "Invalid thresholds. Warning must be less than danger and both must be positive."},
+            status_code=400
+        )
+
+    save_thresholds(warning, danger)
+    return {"message": "Thresholds updated successfully", "warning": warning, "danger": danger}

@@ -56,3 +56,47 @@ def get_all_detections(limit=50):
         }
         for r in rows
     ]
+def get_thresholds():
+    """Gets current threshold settings."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    """)
+    conn.commit()
+
+    cursor.execute("SELECT key, value FROM settings WHERE key LIKE 'threshold_%'")
+    rows = cursor.fetchall()
+    conn.close()
+
+    settings = {row[0]: float(row[1]) for row in rows}
+
+    # Default thresholds if not set
+    return {
+        "warning_threshold": settings.get("threshold_warning", 2.0),
+        "danger_threshold":  settings.get("threshold_danger",  5.0),
+        "warning_label":     "WARNING",
+        "danger_label":      "OVERCROWDED",
+        "safe_label":        "SAFE"
+    }
+
+
+def save_thresholds(warning: float, danger: float):
+    """Saves custom threshold settings."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    """)
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                   ("threshold_warning", str(warning)))
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+                   ("threshold_danger", str(danger)))
+    conn.commit()
+    conn.close()

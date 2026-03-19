@@ -156,15 +156,14 @@ def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
 
             if zone_density < 0.5:
                 risk = "SAFE"
-                color = (0, 255, 0)      # Green
+                color = (0, 255, 0)
             elif zone_density < 1.5:
                 risk = "WARNING"
-                color = (0, 165, 255)    # Orange
+                color = (0, 165, 255)
             else:
-                risk = "DANGER"
-                color = (0, 0, 255)      # Red
-
-            zones.append({
+                risk = "OVERCROWDED"
+                color = (0, 0, 255)
+                zones.append({
                 "zone": f"Zone {r * grid_cols + c + 1}",
                 "row": r,
                 "col": c,

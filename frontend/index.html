@@ -516,7 +516,53 @@
     </div>
 
   </div>
+  <!-- Settings Card -->
+<div class="card full-width" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h2 class="card-title">⚙️ Threshold Settings</h2>
+    <span style="font-size:0.75rem;color:#8892b0;">Configure crowd density alert levels</span>
+  </div>
+  <div class="card-body" style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;">
 
+    <div>
+      <label style="color:#8892b0;font-size:0.78rem;display:block;margin-bottom:6px;">
+        ⚠️ Warning Threshold (density score)
+      </label>
+      <input type="number" id="warningThreshold" step="0.1" min="0.1" value="2.0"
+        style="background:#0f1117;border:1px solid #3d4f7c;color:#fff;
+               padding:8px 12px;border-radius:8px;width:160px;font-size:0.9rem;"/>
+    </div>
+
+    <div>
+      <label style="color:#8892b0;font-size:0.78rem;display:block;margin-bottom:6px;">
+        🚨 Overcrowded Threshold (density score)
+      </label>
+      <input type="number" id="dangerThreshold" step="0.1" min="0.2" value="5.0"
+        style="background:#0f1117;border:1px solid #3d4f7c;color:#fff;
+               padding:8px 12px;border-radius:8px;width:160px;font-size:0.9rem;"/>
+    </div>
+
+    <button onclick="saveThresholds()"
+      style="background:#64ffda;color:#0f1117;border:none;padding:10px 20px;
+             border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;">
+      Save Settings
+    </button>
+
+    <div id="thresholdMsg" style="font-size:0.8rem;color:#64ffda;display:none;">
+      ✅ Settings saved!
+    </div>
+
+    <div style="margin-left:auto;text-align:right;">
+      <div style="font-size:0.72rem;color:#8892b0;margin-bottom:4px;">Risk Labels</div>
+      <div style="font-size:0.78rem;">
+        <span style="color:#2ecc71;">● SAFE</span> &nbsp;
+        <span style="color:#f39c12;">● WARNING</span> &nbsp;
+        <span style="color:#e74c3c;">● OVERCROWDED</span>
+      </div>
+    </div>
+
+  </div>
+</div>
   <!-- Row 3: History Table -->
   <div class="card">
     <div class="card-header">
@@ -636,7 +682,8 @@
       const ctx = canvas.getContext('2d');
 
       // Connect WebSocket
-      websocket = new WebSocket('ws://localhost:8000/ws/webcam');
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      websocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/webcam`);
 
       websocket.onopen = () => {
         console.log('WebSocket connected');
@@ -839,11 +886,43 @@
       `).join('');
     } catch(e) { alert('Could not load history.'); }
   }
+async function saveThresholds() {
+  const warning = parseFloat(document.getElementById('warningThreshold').value)
+  const danger  = parseFloat(document.getElementById('dangerThreshold').value)
 
+  if (warning >= danger) {
+    alert('Warning threshold must be less than overcrowded threshold!')
+    return
+  }
+
+  try {
+    const res = await fetch('/thresholds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ warning_threshold: warning, danger_threshold: danger })
+    })
+    const data = await res.json()
+    const msg  = document.getElementById('thresholdMsg')
+    msg.style.display = 'block'
+    setTimeout(() => { msg.style.display = 'none' }, 3000)
+  } catch (e) {
+    alert('Failed to save settings.')
+  }
+}
+
+async function loadThresholds() {
+  try {
+    const res  = await fetch('/thresholds')
+    const data = await res.json()
+    document.getElementById('warningThreshold').value = data.warning_threshold
+    document.getElementById('dangerThreshold').value  = data.danger_threshold
+  } catch (e) { console.log('Could not load thresholds') }
+}
   // ── Boot ──
   initChart();
   loadStats();
   loadHistory();
+  loadThresholds();
   setInterval(loadStats, 10000);
 </script>
 </body>
