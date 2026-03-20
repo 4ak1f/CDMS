@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
+import torchvision.transforms as transforms
 import numpy as np
 import cv2
 import os
@@ -47,7 +48,6 @@ def load_model():
     """
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
-    # Auto download from Hugging Face if not present locally
     if not os.path.exists(CHECKPOINT_PATH):
         print("📥 Model not found locally. Downloading from Hugging Face...")
         os.makedirs("model_training/checkpoints", exist_ok=True)
@@ -66,40 +66,76 @@ def load_model():
     return model, device
 
 
+def preprocess_frame(frame):
+    """
+    Preprocesses frame for better model accuracy.
+    Applies contrast enhancement and noise reduction.
+    """
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l = clahe.apply(l)
+    enhanced = cv2.merge([l, a, b])
+    enhanced = cv2.cvtColor(enhanced, cv2.COLOR_LAB2BGR)
+    enhanced = cv2.bilateralFilter(enhanced, 5, 75, 75)
+    return enhanced
+
+
 def generate_density_map(model, device, frame):
     """
-    Runs the trained model on a frame.
+    Runs the trained model on a frame with preprocessing.
+    Uses multi-scale prediction and dynamic scaling for better accuracy.
     Returns:
         - density map (numpy array)
         - estimated crowd count
+        - confidence range (min, max)
     """
-    import torchvision.transforms as transforms
-
-    transform = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.Resize((512, 512)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
-        )
-    ])
-
     # Preprocess frame
+    frame = preprocess_frame(frame)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    input_tensor = transform(rgb_frame).unsqueeze(0).to(device)
 
-    with torch.no_grad():
-        density_map = model(input_tensor)
+    # Calculate edge density ONCE before the loop
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(gray, 50, 150)
+    edge_density = np.sum(edges > 0) / (gray.shape[0] * gray.shape[1])
 
-    # Convert to numpy
-    density_np = density_map.squeeze().cpu().numpy()
-    density_np = np.maximum(density_np, 0)  # No negative values
+    # Dynamic scaling based on visual complexity
+    if edge_density > 0.25:
+        scale = 8.0   # Ultra dense crowd
+    elif edge_density > 0.15:
+        scale = 4.0   # Very dense
+    elif edge_density > 0.08:
+        scale = 2.0   # Moderate
+    else:
+        scale = 1.0   # Sparse
 
-    # Estimated count = sum of density map
-    count = float(density_np.sum())
+    counts = []
+    density_maps = []
 
-    return density_np, count
+    for size in [(512, 512), (640, 640), (384, 384)]:
+        t = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize(size),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+        input_tensor = t(rgb_frame).unsqueeze(0).to(device)
+        with torch.no_grad():
+            out = model(input_tensor)
+        density_np = out.squeeze().cpu().numpy()
+        density_np = np.maximum(density_np, 0) * scale
+        counts.append(float(density_np.sum()))
+        density_maps.append(density_np)
+
+    avg_count = float(np.mean(counts))
+    std_count = float(np.std(counts))
+    conf_min  = max(0, avg_count - std_count)
+    conf_max  = avg_count + std_count
+
+    return density_maps[0], avg_count, (round(conf_min), round(conf_max))
 
 
 def generate_heatmap(density_map, frame_shape):
@@ -108,26 +144,20 @@ def generate_heatmap(density_map, frame_shape):
     Red = high density, Green = low density.
     """
     h, w = frame_shape[:2]
-
-    # Resize density map to match frame
     density_resized = cv2.resize(density_map, (w, h))
 
-    # Normalize to 0-255
     if density_resized.max() > 0:
         density_normalized = (density_resized / density_resized.max() * 255).astype(np.uint8)
     else:
         density_normalized = np.zeros((h, w), dtype=np.uint8)
 
-    # Apply colour map (COLORMAP_JET: blue=low, red=high)
     heatmap = cv2.applyColorMap(density_normalized, cv2.COLORMAP_JET)
-
     return heatmap
 
 
 def overlay_heatmap(frame, heatmap, alpha=0.4):
     """
     Blends heatmap onto original frame.
-    Alpha controls transparency (0=invisible, 1=full heatmap)
     """
     return cv2.addWeighted(frame, 1 - alpha, heatmap, alpha, 0)
 
@@ -135,15 +165,15 @@ def overlay_heatmap(frame, heatmap, alpha=0.4):
 def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
     """
     Divides frame into zones and analyzes density per zone.
-    Returns list of zones with their risk levels.
-    This is how real CCTV systems work.
+    Fixed calibration for accurate zone risk assessment.
     """
     h, w = frame_shape[:2]
     density_resized = cv2.resize(density_map, (w, h))
+    density_resized = np.maximum(density_resized, 0)
 
     cell_h = h // grid_rows
     cell_w = w // grid_cols
-    zones = []
+    zones  = []
 
     for r in range(grid_rows):
         for c in range(grid_cols):
@@ -151,30 +181,32 @@ def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
                 r * cell_h:(r + 1) * cell_h,
                 c * cell_w:(c + 1) * cell_w
             ]
-            zone_count = float(cell.sum())
-            zone_density = zone_count / (cell_h * cell_w) * 1000
+            zone_count   = float(cell.sum())
+            cell_area    = cell_h * cell_w
+            zone_density = (zone_count / cell_area) * 10000
 
-            if zone_density < 0.5:
-                risk = "SAFE"
+            if zone_density < 1.0:
+                risk  = "SAFE"
                 color = (0, 255, 0)
-            elif zone_density < 1.5:
-                risk = "WARNING"
+            elif zone_density < 3.0:
+                risk  = "WARNING"
                 color = (0, 165, 255)
             else:
-                risk = "OVERCROWDED"
+                risk  = "OVERCROWDED"
                 color = (0, 0, 255)
-                zones.append({
-                "zone": f"Zone {r * grid_cols + c + 1}",
-                "row": r,
-                "col": c,
-                "count": round(zone_count, 1),
+
+            zones.append({
+                "zone":    f"Zone {r * grid_cols + c + 1}",
+                "row":     r,
+                "col":     c,
+                "count":   round(zone_count, 1),
                 "density": round(zone_density, 3),
-                "risk": risk,
-                "color": color,
-                "x1": c * cell_w,
-                "y1": r * cell_h,
-                "x2": (c + 1) * cell_w,
-                "y2": (r + 1) * cell_h
+                "risk":    risk,
+                "color":   color,
+                "x1":      c * cell_w,
+                "y1":      r * cell_h,
+                "x2":      (c + 1) * cell_w,
+                "y2":      (r + 1) * cell_h
             })
 
     return zones
@@ -190,16 +222,13 @@ def draw_zones(frame, zones):
         color = zone["color"]
         x1, y1, x2, y2 = zone["x1"], zone["y1"], zone["x2"], zone["y2"]
 
-        # Draw zone border
         cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
 
-        # Draw semi-transparent fill
         overlay = annotated.copy()
         cv2.rectangle(overlay, (x1, y1), (x2, y2), color, -1)
         cv2.addWeighted(overlay, 0.15, annotated, 0.85, 0, annotated)
 
-        # Zone label
-        label = f"{zone['zone']}: {zone['risk']}"
+        label       = f"{zone['zone']}: {zone['risk']}"
         count_label = f"~{zone['count']:.0f} people"
         cv2.putText(annotated, label, (x1 + 5, y1 + 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)

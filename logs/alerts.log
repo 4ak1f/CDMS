@@ -245,3 +245,6 @@
 [2026-03-18 12:31:17] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
 [2026-03-18 12:31:21] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
 [2026-03-18 12:31:24] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
+[2026-03-19 20:01:54] OVERCROWDED | People: 309 | Density: 123.7505 | ALERT: OVERCROWDED — Immediate action may be required.
+[2026-03-19 20:02:15] WARNING | People: 52 | Density: 22.5694 | Crowd density is getting high. Monitor closely.
+[2026-03-21 00:09:38] OVERCROWDED | People: 1238 | Density: 495.8029 | ALERT: OVERCROWDED — Immediate action may be required.

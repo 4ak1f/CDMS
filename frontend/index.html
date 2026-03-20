@@ -714,7 +714,7 @@
         img.src = 'data:image/jpeg;base64,' + data.frame;
 
         // Update UI
-        document.getElementById('overlayCount').textContent = `People: ${data.person_count}`;
+        document.getElementById('overlayCount').textContent = `People: ${data.person_count} (${data.confidence_min}-${data.confidence_max})`;
         document.getElementById('overlayRisk').textContent  = `Risk: ${data.risk_level}`;
         updateRiskDisplay(data.person_count, data.risk_level, data.message);
         if (data.zones) updateZones(data.zones);
@@ -777,7 +777,7 @@
       const risk = data.risk_level;
       document.getElementById('imgRisk').textContent    = risk;
       document.getElementById('imgMsg').textContent     = data.message;
-      document.getElementById('imgCount').textContent   = data.person_count;
+      document.getElementById('imgCount').textContent   = `${data.person_count} (±${Math.round((data.confidence_max - data.confidence_min)/2)})`;
       document.getElementById('imgDensity').textContent = data.density_score;
 
       const box = document.getElementById('imgResult');
