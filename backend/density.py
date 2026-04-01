@@ -3,15 +3,10 @@ import numpy as np
 
 
 def estimate_density(person_count, frame_width, frame_height, thresholds=None):
-    """
-    Estimates crowd density based on people count vs frame area.
-    Uses configurable thresholds if provided, otherwise uses defaults.
-    """
-    # Default thresholds
     if thresholds is None:
         thresholds = {
-            "warning_threshold": 2.0,
-            "danger_threshold":  5.0,
+            "warning_threshold": 50,
+            "danger_threshold":  100,
             "safe_label":        "SAFE",
             "warning_label":     "WARNING",
             "danger_label":      "OVERCROWDED"
@@ -20,18 +15,19 @@ def estimate_density(person_count, frame_width, frame_height, thresholds=None):
     frame_area    = frame_width * frame_height
     density_score = (person_count / frame_area) * 100000 if frame_area > 0 else 0
 
-    if density_score < thresholds["warning_threshold"]:
+    # Use person COUNT for thresholds, not density score
+    if person_count < thresholds["warning_threshold"]:
         risk_level = thresholds["safe_label"]
         color      = "green"
         message    = "Crowd density is within safe limits."
-    elif density_score < thresholds["danger_threshold"]:
+    elif person_count < thresholds["danger_threshold"]:
         risk_level = thresholds["warning_label"]
         color      = "orange"
         message    = "Crowd density is getting high. Monitor closely."
     else:
         risk_level = thresholds["danger_label"]
         color      = "red"
-        message    = f"ALERT: {thresholds['danger_label'].upper()} — Immediate action may be required."
+        message    = f"ALERT: {thresholds['danger_label'].upper()} — Immediate action required."
 
     return {
         "person_count":  person_count,

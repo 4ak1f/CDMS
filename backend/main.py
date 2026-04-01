@@ -19,7 +19,8 @@ import numpy as np
 import base64
 import os
 import asyncio
-
+from backend.database import init_db, log_detection, get_all_detections, get_thresholds, save_thresholds, store_feedback, get_feedback_stats, get_all_feedback
+from backend.calibration import get_smart_scale
 app = FastAPI(title="CDMS - Crowd Disaster Management System")
 
 app.add_middleware(
@@ -35,11 +36,13 @@ app.mount("/mobile", StaticFiles(directory="pwa"), name="pwa")
 init_db()
 print("🚀 Loading crowd counting model...")
 crowd_model, model_device = load_model()
+from backend.model_ensemble import CrowdEnsemble
+ensemble = CrowdEnsemble(crowd_model, model_device)
 flow_detector = CrowdFlowDetector()
 print("✅ System ready!")
 
 
-def process_frame(frame):
+def process_frame(frame, crowd_mode="auto"):
     """
     Full processing pipeline for a single frame.
     Returns: annotated_frame, density_result, zones, alert, flow_result, confidence
@@ -50,20 +53,21 @@ def process_frame(frame):
     density_map, model_count, confidence = generate_density_map(crowd_model, model_device, frame)
 
     # Step 2: YOLO detection
-    _, yolo_count, _ = detect_people(frame)
+    _, yolo_count, detections= detect_people(frame)
 
     # Step 3: Smart switching logic
-    density_ratio = model_count / max(float(yolo_count), 1)
-
-    if density_ratio > 3:
-        final_count = model_count
-    elif yolo_count <= 5:
-        final_count = float(yolo_count)
-    elif yolo_count <= 20 and density_ratio < 2:
-        final_count = float(yolo_count)
-    else:
-        final_count = (model_count * 0.7) + (float(yolo_count) * 0.3)
-
+    ensemble_result = ensemble.predict(
+    frame, yolo_count, model_count, confidence, crowd_mode
+)
+    final_count = ensemble_result["count"]
+    # Draw bounding boxes for sparse crowds, heatmap for dense
+    if ensemble_result["method"].startswith("YOLO"):
+    # Sparse — draw individual bounding boxes
+        for det in detections:
+            x1, y1, x2, y2 = det["bbox"]
+            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(annotated_frame, f"{det['confidence']:.0%}",
+                    (x1, y1-8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
     # Step 4: Heatmap
     heatmap = generate_heatmap(density_map, frame.shape)
     heatmap_frame = overlay_heatmap(frame, heatmap, alpha=0.45)
@@ -97,7 +101,7 @@ def process_frame(frame):
     }
     color = risk_colors_cv.get(risk, (255, 255, 255))
     cv2.rectangle(annotated_frame, (0, 0), (w, 55), (0, 0, 0), -1)
-    cv2.putText(annotated_frame, f"People: {int(final_count)} ({confidence[0]}-{confidence[1]})",
+    cv2.putText(annotated_frame, f"People: {int(final_count)} [{ensemble_result['method']}]",
                 (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     cv2.putText(annotated_frame, f"Risk: {risk}", (10, 48),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
@@ -142,7 +146,7 @@ def serve_dashboard():
 
 
 @app.post("/analyze/image")
-async def analyze_image(file: UploadFile = File(...)):
+async def analyze_image(file: UploadFile = File(...), mode: str = "auto"):
     contents = await file.read()
     np_arr   = np.frombuffer(contents, np.uint8)
     frame    = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -150,7 +154,7 @@ async def analyze_image(file: UploadFile = File(...)):
     if frame is None:
         return JSONResponse({"error": "Invalid image file"}, status_code=400)
 
-    annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame)
+    annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame, mode)
 
     _, buffer = cv2.imencode(".jpg", annotated_frame)
     img_base64 = base64.b64encode(buffer).decode("utf-8")
@@ -175,7 +179,7 @@ async def analyze_image(file: UploadFile = File(...)):
 
 
 @app.post("/analyze/video")
-async def analyze_video(file: UploadFile = File(...)):
+async def analyze_video(file: UploadFile = File(...), mode: str = "auto"):
     os.makedirs("uploads", exist_ok=True)
     video_path = f"uploads/{file.filename}"
 
@@ -200,7 +204,7 @@ async def analyze_video(file: UploadFile = File(...)):
         if frame_num % 30 != 0:
             continue
         frame = cv2.resize(frame, (640, 360))
-        _, density_result, zones, _, _, _ = process_frame(frame)
+        _, density_result, zones, _, _, _ = process_frame(frame, mode)
         frame_results.append(density_result)
 
     cap.release()
@@ -241,13 +245,14 @@ async def webcam_stream(websocket: WebSocket):
             data       = await websocket.receive_text()
             payload    = json.loads(data)
             img_data   = base64.b64decode(payload["frame"])
+            crowd_mode = payload.get("mode", "auto")
             np_arr     = np.frombuffer(img_data, np.uint8)
             frame      = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
             if frame is None:
                 continue
 
-            annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame)
+            annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame, crowd_mode)
 
             _, buffer  = cv2.imencode(".jpg", annotated_frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             result_b64 = base64.b64encode(buffer).decode("utf-8")
@@ -371,3 +376,60 @@ async def update_thresholds(request: Request):
 
     save_thresholds(warning, danger)
     return {"message": "Thresholds updated", "warning": warning, "danger": danger}
+@app.post("/feedback")
+async def submit_feedback(request: Request):
+    """
+    Accepts user correction of crowd count.
+    Stores for model calibration and future retraining.
+    """
+    body = await request.json()
+    predicted = int(body.get("predicted_count", 0))
+    actual    = int(body.get("actual_count", 0))
+    scene     = body.get("scene_type", "unknown")
+
+    if actual < 0:
+        return JSONResponse({"error": "Invalid count"}, status_code=400)
+
+    store_feedback(predicted, actual, scene)
+
+    return {
+        "message": "Feedback stored successfully",
+        "predicted": predicted,
+        "actual": actual,
+        "correction_ratio": round(actual / max(predicted, 1), 2),
+        "impact": "Model will use this for future calibration"
+    }
+
+
+@app.get("/feedback")
+def get_feedback():
+    """Returns all stored feedback entries."""
+    return {
+        "feedback": get_all_feedback(limit=50),
+        "stats":    get_feedback_stats()
+    }
+
+
+@app.get("/calibration")
+def get_calibration_stats():
+    """Returns calibration statistics per scene type."""
+    stats = get_feedback_stats()
+    return {
+        "scene_calibrations": stats,
+        "total_feedback_samples": sum(
+            v["sample_count"] for v in stats.values()
+        )
+    }
+@app.post("/logs/clear")
+def clear_logs():
+    """Clears all detection history from database."""
+    import sqlite3
+    conn = sqlite3.connect("logs/cdms.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM detections")
+    conn.commit()
+    conn.close()
+    # Also clear the log file
+    with open("logs/alerts.log", "w") as f:
+        f.write("")
+    return {"message": "Logs cleared successfully"}

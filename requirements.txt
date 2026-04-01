@@ -14,9 +14,12 @@ h11==0.16.0
 h5py==3.16.0
 hf-xet==1.4.2
 httpcore==1.0.9
+httptools==0.7.1
 httpx==0.28.1
 huggingface_hub==1.7.1
 idna==3.11
+ImageIO==2.37.3
+imageio-ffmpeg==0.6.0
 Jinja2==3.1.6
 kiwisolver==1.5.0
 markdown-it-py==4.0.0
@@ -38,6 +41,7 @@ pydantic_core==2.41.5
 Pygments==2.19.2
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.2
 python-multipart==0.0.22
 PyYAML==6.0.3
 reportlab==4.4.10
@@ -59,3 +63,6 @@ ultralytics==8.4.22
 ultralytics-thop==2.0.18
 urllib3==2.6.3
 uvicorn==0.42.0
+uvloop==0.22.1
+watchfiles==1.1.1
+websockets==16.0

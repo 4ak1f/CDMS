@@ -96,7 +96,7 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
+    
     /* ── Layout ── */
     .main { padding: 24px 32px; max-width: 1600px; margin: 0 auto; }
 
@@ -526,18 +526,18 @@
 
     <div>
       <label style="color:#8892b0;font-size:0.78rem;display:block;margin-bottom:6px;">
-        ⚠️ Warning Threshold (density score)
+        ⚠️ Warning Threshold (person count)
       </label>
-      <input type="number" id="warningThreshold" step="0.1" min="0.1" value="2.0"
+      <input type="number" id="warningThreshold" step="0.1" min="0.1" value="50"
         style="background:#0f1117;border:1px solid #3d4f7c;color:#fff;
                padding:8px 12px;border-radius:8px;width:160px;font-size:0.9rem;"/>
     </div>
 
     <div>
       <label style="color:#8892b0;font-size:0.78rem;display:block;margin-bottom:6px;">
-        🚨 Overcrowded Threshold (density score)
+        🚨 Overcrowded Threshold (person count)
       </label>
-      <input type="number" id="dangerThreshold" step="0.1" min="0.2" value="5.0"
+      <input type="number" id="dangerThreshold" step="0.1" min="0.2" value="100"
         style="background:#0f1117;border:1px solid #3d4f7c;color:#fff;
                padding:8px 12px;border-radius:8px;width:160px;font-size:0.9rem;"/>
     </div>
@@ -567,7 +567,11 @@
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 Detection History</div>
-      <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="loadHistory()">↻ Refresh</button>
+      <div style="display:flex;gap:8px;">
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="loadHistory()">↻ Refresh</button>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;color:#e74c3c;border-color:#e74c3c;" onclick="clearLogs()">🗑 Clear</button>
+  <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="exportCSV()">📥 Export CSV</button>
+</div>
     </div>
     <div class="card-body" style="padding:0;">
       <div class="table-wrap">
@@ -592,6 +596,83 @@
 </div>
 
 <script>
+  let currentMode = 'auto'
+
+function setCrowdMode(mode) {
+  currentMode = mode
+  const labels = {
+    'auto':     'AUTO',
+    'sparse':   'SPARSE (1-20)',
+    'moderate': 'MODERATE (20-200)',
+    'dense':    'DENSE (200-1000)',
+    'mega':     'MEGA CROWD (1000+)'
+  }
+  document.getElementById('modeDisplay').textContent = 'Mode: ' + labels[mode]
+}
+  async function clearLogs() {
+  if (!confirm('Clear all detection history? This cannot be undone.')) return
+  try {
+    const res = await fetch('/logs/clear', { method: 'POST' })
+    if (res.ok) {
+      document.getElementById('historyBody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">History cleared<\/td><\/tr>'
+      loadStats()
+    }
+  } catch(e) { alert('Failed to clear logs') }
+}
+
+async function exportCSV() {
+  try {
+    const res  = await fetch('/history')
+    const data = await res.json()
+    if (!data.length) { alert('No data to export'); return }
+
+    const headers = ['Timestamp','People','Density','Risk Level','Message']
+    const rows    = data.map(r => [
+      r.timestamp, r.person_count, r.density_score, r.risk_level, r.message
+    ])
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => `"${v}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `CDMS_detections_${new Date().toISOString().slice(0,10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch(e) { alert('Export failed') }
+}
+    let lastPredictedCount = 0
+
+async function submitFeedback() {
+  const actual    = parseInt(document.getElementById('actualCount').value)
+  const sceneType = document.getElementById('sceneType').value
+
+  if (isNaN(actual) || actual < 0) {
+    alert('Please enter a valid count')
+    return
+  }
+
+  try {
+    await fetch('/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        predicted_count: lastPredictedCount,
+        actual_count:    actual,
+        scene_type:      sceneType
+      })
+    })
+    document.getElementById('feedbackMsg').style.display = 'block'
+    document.getElementById('actualCount').value = ''
+    setTimeout(() => {
+      document.getElementById('feedbackMsg').style.display  = 'none'
+      document.getElementById('feedbackWidget').style.display = 'none'
+    }, 3000)
+  } catch { alert('Failed to submit feedback') }
+}
   // ── State ──
   let imageFile = null;
   let videoFile = null;
@@ -700,7 +781,7 @@
           ctx.drawImage(video, 0, 0, 640, 480);
           const frameData = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
           if (websocket.readyState === WebSocket.OPEN) {
-            websocket.send(JSON.stringify({ frame: frameData }));
+            websocket.send(JSON.stringify({ frame: frameData, mode: currentMode }));
           }
         }, 500);
       };
@@ -769,6 +850,7 @@
 
     const formData = new FormData();
     formData.append('file', imageFile);
+    const res = await fetch(`/analyze/image?mode=${currentMode}`, { method: 'POST', body: formData })
 
     try {
       const res  = await fetch('/analyze/image', { method: 'POST', body: formData });
@@ -788,8 +870,10 @@
         const img = document.getElementById('annotated-img');
         img.src = 'data:image/jpeg;base64,' + data.annotated_image;
         img.style.display = 'block';
+      } 
+      else {
+        document.getElementById('annotated-img').style.display = 'none';
       }
-
       updateRiskDisplay(data.person_count, risk, data.message);
       if (data.zones) updateZones(data.zones);
       loadStats();
@@ -817,7 +901,7 @@
     formData.append('file', videoFile);
 
     try {
-      const res  = await fetch('/analyze/video', { method: 'POST', body: formData });
+      const res  = await fetch(`/analyze/video?mode=${currentMode}`, { method: 'POST', body: formData });
       const data = await res.json();
 
       const risk = data.overall_risk;
@@ -925,5 +1009,40 @@ async function loadThresholds() {
   loadThresholds();
   setInterval(loadStats, 10000);
 </script>
+<!-- Feedback Widget -->
+<div id="feedbackWidget" style="display:none;margin-top:16px;padding:16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;">
+  <div style="font-size:0.85rem;font-weight:700;color:#0369a1;margin-bottom:4px;">
+    🎯 Help improve the model
+  </div>
+  <div style="font-size:0.78rem;color:#64748b;margin-bottom:12px;">
+    System estimated <strong id="predictedDisplay">0</strong> people. 
+    How many were actually there?
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input type="number" id="actualCount" placeholder="Your estimate"
+      min="0" max="100000"
+      style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;width:140px;font-size:0.85rem;"/>
+    <select id="sceneType"
+      style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.82rem;">
+      <option value="sparse_indoor">Sparse Indoor (1-20)</option>
+      <option value="moderate_indoor">Moderate Indoor (20-100)</option>
+      <option value="dense_indoor">Dense Indoor (100+)</option>
+      <option value="sparse_outdoor">Sparse Outdoor (1-50)</option>
+      <option value="moderate_outdoor">Moderate Outdoor (50-200)</option>
+      <option value="dense_outdoor">Dense Outdoor (200+)</option>
+    </select>
+    <button onclick="submitFeedback()"
+      style="padding:8px 18px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.85rem;">
+      Submit ✓
+    </button>
+    <button onclick="document.getElementById('feedbackWidget').style.display='none'"
+      style="padding:8px 12px;background:transparent;color:#94a3b8;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:0.82rem;">
+      Skip
+    </button>
+  </div>
+  <div id="feedbackMsg" style="display:none;margin-top:10px;font-size:0.78rem;color:#16a34a;font-weight:600;">
+    ✅ Thank you! Model will use this feedback for calibration.
+  </div>
+</div>
 </body>
 </html>

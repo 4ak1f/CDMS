@@ -100,3 +100,80 @@ def save_thresholds(warning: float, danger: float):
                    ("threshold_danger", str(danger)))
     conn.commit()
     conn.close()
+def store_feedback(predicted_count, actual_count, scene_type, image_hash=None):
+    """Stores user feedback for model improvement."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            predicted_count INTEGER,
+            actual_count INTEGER,
+            scene_type TEXT,
+            image_hash TEXT,
+            scale_factor REAL,
+            correction_ratio REAL
+        )
+    """)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    correction_ratio = actual_count / max(predicted_count, 1)
+    cursor.execute("""
+        INSERT INTO feedback 
+        (timestamp, predicted_count, actual_count, scene_type, image_hash, correction_ratio)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (timestamp, predicted_count, actual_count, scene_type, image_hash, correction_ratio))
+    conn.commit()
+    conn.close()
+    print(f"✅ Feedback stored: predicted={predicted_count}, actual={actual_count}, ratio={correction_ratio:.2f}")
+
+
+def get_feedback_stats():
+    """Gets feedback statistics for calibration."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT scene_type, AVG(correction_ratio), COUNT(*), AVG(actual_count)
+            FROM feedback
+            GROUP BY scene_type
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return {
+            row[0]: {
+                "avg_correction_ratio": row[1],
+                "sample_count": row[2],
+                "avg_actual_count": row[3]
+            }
+            for row in rows
+        }
+    except:
+        conn.close()
+        return {}
+
+
+def get_all_feedback(limit=50):
+    """Gets recent feedback entries."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT timestamp, predicted_count, actual_count, 
+                   scene_type, correction_ratio
+            FROM feedback
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [{
+            "timestamp":        r[0],
+            "predicted_count":  r[1],
+            "actual_count":     r[2],
+            "scene_type":       r[3],
+            "correction_ratio": round(r[4], 2)
+        } for r in rows]
+    except:
+        conn.close()
+        return []    

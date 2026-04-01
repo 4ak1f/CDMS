@@ -5,12 +5,42 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/analyze': 'http://localhost:8000',
-      '/history': 'http://localhost:8000',
-      '/stats':   'http://localhost:8000',
-      '/alerts':  'http://localhost:8000',
-      '/reports': 'http://localhost:8000',
-      '/ws':      { target: 'ws://localhost:8000', ws: true }
+      '/analyze': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/history': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/stats': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/alerts': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/reports': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/thresholds': {
+        target: 'https://localhost:8000',
+        secure: false,
+        changeOrigin: true
+      },
+      '/ws': {
+        target: 'wss://localhost:8000',
+        ws: true,
+        secure: false,
+        changeOrigin: true
+      }
     }
   }
 })

@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import os
 from huggingface_hub import hf_hub_download
-
+from backend.calibration import get_smart_scale
 CHECKPOINT_PATH = "model_training/checkpoints/best_model.pth"
 REPO_ID = "4AK1F/CDMS-crowd-counting"
 
@@ -95,19 +95,11 @@ def generate_density_map(model, device, frame):
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # Calculate edge density ONCE before the loop
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
-    edge_density = np.sum(edges > 0) / (gray.shape[0] * gray.shape[1])
-
-    # Dynamic scaling based on visual complexity
-    if edge_density > 0.25:
-        scale = 8.0   # Ultra dense crowd
-    elif edge_density > 0.15:
-        scale = 4.0   # Very dense
-    elif edge_density > 0.08:
-        scale = 2.0   # Moderate
-    else:
-        scale = 1.0   # Sparse
+    from backend.calibration import get_smart_scale
+    scale, scene_type, edge_density, texture_score = get_smart_scale(frame)
+# Cap scale — never multiply by more than 3x to avoid wild overcounting
+    scale = min(scale, 3.0)
+    print(f"🎬 Scene: {scene_type} | Scale: {scale} | Edge: {edge_density:.3f}")
 
     counts = []
     density_maps = []
@@ -181,7 +173,7 @@ def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
                 r * cell_h:(r + 1) * cell_h,
                 c * cell_w:(c + 1) * cell_w
             ]
-            zone_count   = float(cell.sum())
+            zone_count = max(0.0, float(cell.sum()))
             cell_area    = cell_h * cell_w
             zone_density = (zone_count / cell_area) * 10000
 

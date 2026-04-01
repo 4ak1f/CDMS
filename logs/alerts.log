@@ -1,250 +1,98 @@
-[2026-03-17 01:57:59] DANGER | People: 578 | Density: 231.4815 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 01:58:15] DANGER | People: 578 | Density: 231.4815 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 01:58:41] DANGER | People: 578 | Density: 231.4815 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 11:41:27] DANGER | People: 458 | Density: 183.423 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:43:53] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:43:55] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:43:56] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:43:58] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:43:59] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:02] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:03] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:05] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:07] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:09] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:11] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:12] DANGER | People: 24 | Density: 1.1574 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:14] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:16] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:19] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:21] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:22] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:25] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:26] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:28] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:29] DANGER | People: 23 | Density: 1.1092 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:30] DANGER | People: 23 | Density: 1.1092 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:31] DANGER | People: 20 | Density: 0.9645 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:33] DANGER | People: 18 | Density: 0.8681 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:35] DANGER | People: 20 | Density: 0.9645 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:37] DANGER | People: 21 | Density: 1.0127 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:39] DANGER | People: 24 | Density: 1.1574 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:41] DANGER | People: 18 | Density: 0.8681 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:43] DANGER | People: 22 | Density: 1.061 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:44] DANGER | People: 22 | Density: 1.061 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:45] DANGER | People: 21 | Density: 1.0127 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:47] DANGER | People: 22 | Density: 1.061 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:48] DANGER | People: 22 | Density: 1.061 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:44:51] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:55:36] DANGER | People: 476 | Density: 190.6318 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:07] DANGER | People: 23 | Density: 1.1092 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:10] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:12] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:14] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:15] DANGER | People: 32 | Density: 1.5432 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:17] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:18] DANGER | People: 32 | Density: 1.5432 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:19] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:21] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:22] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:23] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:25] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:26] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:28] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:30] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:32] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:35] DANGER | People: 32 | Density: 1.5432 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:37] DANGER | People: 34 | Density: 1.6397 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:39] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:41] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:43] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:45] DANGER | People: 37 | Density: 1.7843 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:47] DANGER | People: 36 | Density: 1.7361 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:51] DANGER | People: 40 | Density: 1.929 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:53] DANGER | People: 36 | Density: 1.7361 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:56] DANGER | People: 35 | Density: 1.6879 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:57] DANGER | People: 39 | Density: 1.8808 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:56:59] DANGER | People: 38 | Density: 1.8326 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:00] DANGER | People: 38 | Density: 1.8326 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:03] DANGER | People: 37 | Density: 1.7843 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:04] DANGER | People: 38 | Density: 1.8326 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:05] DANGER | People: 41 | Density: 1.9772 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:07] DANGER | People: 39 | Density: 1.8808 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:08] DANGER | People: 38 | Density: 1.8326 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:10] DANGER | People: 40 | Density: 1.929 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:11] DANGER | People: 39 | Density: 1.8808 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:13] DANGER | People: 40 | Density: 1.929 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:14] DANGER | People: 42 | Density: 2.0255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:16] DANGER | People: 42 | Density: 2.0255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:17] DANGER | People: 37 | Density: 1.7843 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:19] DANGER | People: 34 | Density: 1.6397 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:20] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:21] DANGER | People: 38 | Density: 1.8326 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:23] DANGER | People: 39 | Density: 1.8808 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:25] DANGER | People: 34 | Density: 1.6397 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:26] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:28] DANGER | People: 34 | Density: 1.6397 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:30] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:32] DANGER | People: 32 | Density: 1.5432 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:33] DANGER | People: 32 | Density: 1.5432 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:35] DANGER | People: 34 | Density: 1.6397 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:36] DANGER | People: 35 | Density: 1.6879 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:38] DANGER | People: 33 | Density: 1.5914 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 13:57:39] DANGER | People: 31 | Density: 1.495 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:01] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:02] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:03] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:05] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:06] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:07] DANGER | People: 30 | Density: 1.4468 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:08] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:09] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:10] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:12] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:13] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:14] DANGER | People: 24 | Density: 1.1574 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:15] DANGER | People: 29 | Density: 1.3985 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:16] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:17] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:19] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:20] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:21] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:22] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:21:23] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-17 16:23:34] DANGER | People: 782 | Density: 65.0393 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:38] DANGER | People: 9 | Density: 2.9297 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:41] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:44] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:46] DANGER | People: 9 | Density: 2.9297 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:48] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:50] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:52] DANGER | People: 11 | Density: 3.5807 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:55] DANGER | People: 12 | Density: 3.9062 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:53:56] DANGER | People: 13 | Density: 4.2318 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:00] DANGER | People: 13 | Density: 4.2318 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:02] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:06] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:10] DANGER | People: 9 | Density: 2.9297 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:13] DANGER | People: 9 | Density: 2.9297 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:16] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:20] DANGER | People: 9 | Density: 2.9297 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:22] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:26] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:30] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:32] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:35] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:36] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:39] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:41] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:43] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:45] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:47] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:50] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:51] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:53] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:55] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:54:56] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:01] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:04] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:06] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:08] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:10] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:13] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:14] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:17] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:19] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:20] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:24] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:26] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:28] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:30] DANGER | People: 12 | Density: 3.9062 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:32] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:33] DANGER | People: 10 | Density: 3.2552 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:36] DANGER | People: 11 | Density: 3.5807 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 11:55:38] DANGER | People: 11 | Density: 3.5807 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:29] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:35] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:38] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:42] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:45] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:50] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:55] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:11:59] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:04] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:10] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:14] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:16] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:18] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:22] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:25] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:28] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:31] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:33] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:35] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:12:39] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:26:50] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:26:55] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:26:59] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:01] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:03] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:04] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:07] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:10] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:16] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:17] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:21] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:25] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:29] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:31] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:33] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:36] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:38] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:40] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:43] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:45] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:47] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:51] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:27:55] DANGER | People: 1 | Density: 0.3255 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:12] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:15] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:20] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:23] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:28] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:30] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:33] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:35] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:38] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:44] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:46] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:49] DANGER | People: 24 | Density: 1.1574 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:54] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:56] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:28:59] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:29:00] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:29:03] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:29:06] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:29:09] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:29:11] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:23] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:26] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:31] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:36] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:39] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:42] DANGER | People: 28 | Density: 1.3503 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:46] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:48] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:50] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:53] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:55] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:30:57] DANGER | People: 24 | Density: 1.1574 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:00] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:02] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:06] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:11] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:15] DANGER | People: 27 | Density: 1.3021 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:17] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:21] DANGER | People: 26 | Density: 1.2539 | CRITICAL: Dangerous crowd density detected!
-[2026-03-18 12:31:24] DANGER | People: 25 | Density: 1.2056 | CRITICAL: Dangerous crowd density detected!
-[2026-03-19 20:01:54] OVERCROWDED | People: 309 | Density: 123.7505 | ALERT: OVERCROWDED — Immediate action may be required.
-[2026-03-19 20:02:15] WARNING | People: 52 | Density: 22.5694 | Crowd density is getting high. Monitor closely.
-[2026-03-21 00:09:38] OVERCROWDED | People: 1238 | Density: 495.8029 | ALERT: OVERCROWDED — Immediate action may be required.
+[2026-03-31 23:26:30] WARNING | People: 10 | Density: 0.077 | Crowd density is getting high. Monitor closely.
+[2026-03-31 23:26:35] WARNING | People: 10 | Density: 0.077 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:53] WARNING | People: 8 | Density: 2.6042 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:53] WARNING | People: 6 | Density: 1.9531 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:53] WARNING | People: 4 | Density: 1.3021 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:54] WARNING | People: 3 | Density: 0.9766 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:54] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:54] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:55] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:55] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:55] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:55] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:56] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:56] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:56] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:57] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:57] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:58] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:58] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:59] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:16:59] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:00] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:00] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:01] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:01] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:02] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:02] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:03] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:17:03] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:27] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:27] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:27] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:28] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:28] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:29] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:29] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:30] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:30] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:31] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:31] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:32] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:32] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:33] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:33] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:34] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:34] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:35] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:35] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:36] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:36] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:37] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:37] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:38] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:38] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:39] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:39] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:40] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:40] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:41] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:41] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:42] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:42] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:43] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:43] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:44] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:44] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:45] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:45] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:46] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:46] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:47] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:47] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:48] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:48] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:49] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:49] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:50] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:50] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:51] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:51] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:52] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:52] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:53] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:53] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:54] WARNING | People: 2 | Density: 0.651 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:54] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:55] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:55] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:56] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:56] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:57] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:18:57] WARNING | People: 1 | Density: 0.3255 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:13] WARNING | People: 4 | Density: 0.0574 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:14] WARNING | People: 7 | Density: 0.1004 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:29] WARNING | People: 9 | Density: 0.1291 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:30] WARNING | People: 10 | Density: 0.1435 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:34] WARNING | People: 11 | Density: 0.1578 | Crowd density is getting high. Monitor closely.
+[2026-04-01 14:19:35] WARNING | People: 11 | Density: 0.1578 | Crowd density is getting high. Monitor closely.
