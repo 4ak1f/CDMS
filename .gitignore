@@ -13,3 +13,6 @@ yolov8n.pt
 model_training/dataset/
 model_training/checkpoints/
 yolov8n.pt
+yolov8m.pt
+yolov8n-seg.pt
+yolov8n.pt
