@@ -102,7 +102,7 @@ def get_calibrated_scale(scene_type, yolo_count=0):
 
     if scene_type in feedback_stats:
         stats = feedback_stats[scene_type]
-        if stats["sample_count"] >= 2:
+        if stats["sample_count"] >= 1:
             correction    = stats["avg_correction_ratio"]
             calibrated    = base_scale * correction
             # Never go below 0.5 or above 5.0

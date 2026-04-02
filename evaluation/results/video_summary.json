@@ -1,0 +1,19 @@
+{
+  "dataset": "Mall Dataset (CUHK)",
+  "total_frames": 100,
+  "avg_count": 19.4,
+  "max_count": 36,
+  "min_count": 7,
+  "std_count": 7.28,
+  "avg_fps": 1.0,
+  "risk_distribution": {
+    "SAFE": 100,
+    "WARNING": 0,
+    "OVERCROWDED": 0
+  },
+  "method_distribution": {
+    "Blend": 40,
+    "YOLO": 60
+  },
+  "timestamp": "2026-04-02 12:33:21"
+}

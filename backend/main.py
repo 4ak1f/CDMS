@@ -14,6 +14,10 @@ from backend.crowd_model import (
     generate_heatmap, overlay_heatmap,
     analyze_zones, draw_zones
 )
+from backend.database import (init_db, log_detection, get_all_detections,
+    get_thresholds, save_thresholds, store_feedback, get_feedback_stats,
+    get_all_feedback, log_incident, get_incidents, clear_detections,
+    archive_old_detections, save_zone_config, get_zone_config)
 import cv2
 import numpy as np
 import base64
@@ -53,32 +57,30 @@ def process_frame(frame, crowd_mode="auto"):
     density_map, model_count, confidence = generate_density_map(crowd_model, model_device, frame)
 
     # Step 2: YOLO detection
-    _, yolo_count, detections= detect_people(frame)
+    _, yolo_count, detections = detect_people(frame)
 
-    # Step 3: Smart switching logic
+        # Step 3: Ensemble prediction
     ensemble_result = ensemble.predict(
-    frame, yolo_count, model_count, confidence, crowd_mode
-)
+            frame, yolo_count, model_count, confidence, crowd_mode
+        )
     final_count = ensemble_result["count"]
-    # Draw bounding boxes for sparse crowds, heatmap for dense
-    if ensemble_result["method"].startswith("YOLO"):
-    # Sparse — draw individual bounding boxes
-        for det in detections:
-            x1, y1, x2, y2 = det["bbox"]
-            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(annotated_frame, f"{det['confidence']:.0%}",
-                    (x1, y1-8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
-    # Step 4: Heatmap
+
+        # Step 4: Heatmap + zones (must happen before drawing boxes)
     heatmap = generate_heatmap(density_map, frame.shape)
     heatmap_frame = overlay_heatmap(frame, heatmap, alpha=0.45)
-
-    # Step 5: Zone analysis
     zones = analyze_zones(density_map, frame.shape, grid_rows=3, grid_cols=3)
     annotated_frame = draw_zones(heatmap_frame, zones)
 
-    # Step 6: Crowd flow detection
+        # Step 5: Crowd flow detection
     flow_result, annotated_frame = flow_detector.detect_flow(annotated_frame)
 
+        # Step 6: Draw bounding boxes for sparse crowds
+    if ensemble_result["method"].startswith("YOLO"):
+            for det in detections:
+                x1, y1, x2, y2 = det["bbox"]
+                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(annotated_frame, f"{det['confidence']:.0%}",
+                        (x1, y1-8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
     # Step 7: Risk classification with thresholds
     thresholds    = get_thresholds()
     danger_label  = thresholds["danger_label"]
@@ -118,7 +120,10 @@ def process_frame(frame, crowd_mode="auto"):
         density_result["risk_level"],
         density_result["message"]
     )
-
+    # Log incidents separately for WARNING/DANGER only
+    if risk in ["WARNING", "DANGER", "OVERCROWDED"]:
+        log_incident(int(final_count), density_result["density_score"],
+                    risk, density_result["message"], zones)
     if risk in ["DANGER", "OVERCROWDED"]:
         report_path, _ = generate_incident_report(
             trigger_event="Automated detection",
@@ -433,3 +438,29 @@ def clear_logs():
     with open("logs/alerts.log", "w") as f:
         f.write("")
     return {"message": "Logs cleared successfully"}
+
+@app.get("/incidents")
+def get_incident_log():
+    return get_incidents(limit=50)
+
+@app.post("/logs/clear")
+def clear_logs():
+    clear_detections()
+    if os.path.exists("logs/alerts.log"):
+        open("logs/alerts.log", "w").close()
+    return {"message": "Logs cleared"}
+
+@app.post("/logs/archive")
+def archive_logs():
+    deleted = archive_old_detections(days=30)
+    return {"message": f"Archived {deleted} records older than 30 days"}
+
+@app.get("/zones/config")
+def get_zones():
+    return get_zone_config()
+
+@app.post("/zones/config")
+async def save_zones(request: Request):
+    body = await request.json()
+    save_zone_config(body)
+    return {"message": "Zone config saved"}

@@ -1,0 +1,19 @@
+{
+  "dataset": "ShanghaiTech Part B Test Set",
+  "total_images": 316,
+  "mae": 61.55,
+  "rmse": 82.16,
+  "mean_rel_error": 78.6,
+  "min_error": 0,
+  "max_error": 325,
+  "risk_distribution": {
+    "SAFE": 4,
+    "WARNING": 92,
+    "OVERCROWDED": 220
+  },
+  "method_distribution": {
+    "Blend": 287,
+    "YOLO": 29
+  },
+  "timestamp": "2026-04-02 12:36:48"
+}

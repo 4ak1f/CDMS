@@ -416,6 +416,15 @@
       <div class="card-body">
         <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px;">3×3 grid — real-time zone analysis</p>
         <div class="zone-grid" id="zoneGrid">
+          <div style="margin-top:12px;border-top:1px solid #2d3561;padding-top:12px;">
+  <div style="font-size:0.72rem;color:#8892b0;margin-bottom:8px;">Zone Names & Capacity:</div>
+  <div id="zoneConfigGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+    <!-- Filled by JS -->
+  </div>
+  <button onclick="saveZoneConfig()" class="btn btn-primary" style="width:100%;margin-top:10px;padding:8px;">
+    Save Zone Config
+  </button>
+</div>
           <!-- Filled dynamically -->
           <div class="zone-cell safe"><div class="zn">Zone 1</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
           <div class="zone-cell safe"><div class="zn">Zone 2</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
@@ -551,7 +560,17 @@
     <div id="thresholdMsg" style="font-size:0.8rem;color:#64ffda;display:none;">
       ✅ Settings saved!
     </div>
-
+    <div style="margin-top:12px;">
+  <div style="font-size:0.72rem;color:#8892b0;margin-bottom:8px;">Quick Presets:</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="applyPreset('library')"    class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">📚 Library</button>
+    <button onclick="applyPreset('street')"     class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">🏙 Street</button>
+    <button onclick="applyPreset('concert')"    class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">🎵 Concert</button>
+    <button onclick="applyPreset('station')"    class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">🚉 Station</button>
+    <button onclick="applyPreset('stadium')"    class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">🏟 Stadium</button>
+    <button onclick="applyPreset('religious')"  class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;">🕌 Religious</button>
+  </div>
+</div>
     <div style="margin-left:auto;text-align:right;">
       <div style="font-size:0.72rem;color:#8892b0;margin-bottom:4px;">Risk Labels</div>
       <div style="font-size:0.78rem;">
@@ -567,6 +586,32 @@
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 Detection History</div>
+      <!-- Incident Log -->
+<div class="card full-width" style="margin-top:20px;">
+  <div class="card-header">
+    <h2 class="card-title">🚨 Incident Log (WARNING/DANGER Only)</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="loadIncidents()">↻ Refresh</button>
+      <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="archiveLogs()">📦 Archive Old</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>People</th>
+          <th>Density</th>
+          <th>Risk Level</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="incidentBody">
+        <tr><td colspan="5" style="text-align:center;color:#8892b0;padding:24px;">No incidents recorded</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
       <div style="display:flex;gap:8px;">
   <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;" onclick="loadHistory()">↻ Refresh</button>
   <button class="btn btn-ghost" style="padding:6px 14px;font-size:0.78rem;color:#e74c3c;border-color:#e74c3c;" onclick="clearLogs()">🗑 Clear</button>
@@ -596,6 +641,164 @@
 </div>
 
 <script>
+  // ── Presets ──────────────────────────────────────────
+const PRESETS = {
+  library:   { warning: 20,   danger: 40,   label: 'Library'   },
+  street:    { warning: 100,  danger: 200,  label: 'Street'    },
+  concert:   { warning: 500,  danger: 1000, label: 'Concert'   },
+  station:   { warning: 200,  danger: 400,  label: 'Station'   },
+  stadium:   { warning: 1000, danger: 3000, label: 'Stadium'   },
+  religious: { warning: 300,  danger: 800,  label: 'Religious' },
+}
+
+async function applyPreset(type) {
+  const p = PRESETS[type]
+  if (!p) return
+  document.getElementById('warningThreshold').value = p.warning
+  document.getElementById('dangerThreshold').value  = p.danger
+  await saveThresholds()
+  showToast(`✅ ${p.label} preset applied (Warning: ${p.warning}, Danger: ${p.danger})`)
+}
+
+// ── Incidents ─────────────────────────────────────────
+async function loadIncidents() {
+  try {
+    const res  = await fetch('/incidents')
+    const data = await res.json()
+    const tbody = document.getElementById('incidentBody')
+    const riskColors = { WARNING: '#f39c12', DANGER: '#e74c3c', OVERCROWDED: '#e74c3c' }
+    if (!data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8892b0;padding:24px;">No incidents recorded</td></tr>'
+      return
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td>${r.timestamp}</td>
+        <td>${r.person_count}</td>
+        <td>${r.density_score}</td>
+        <td style="color:${riskColors[r.risk_level] || '#fff'};font-weight:bold;">${r.risk_level}</td>
+        <td>${r.message}</td>
+      </tr>
+    `).join('')
+  } catch(e) { console.log('Incidents load failed') }
+}
+
+async function archiveLogs() {
+  if (!confirm('Archive detections older than 30 days?')) return
+  const res  = await fetch('/logs/archive', { method: 'POST' })
+  const data = await res.json()
+  showToast(data.message)
+  loadHistory()
+}
+
+// ── Alert Sound ───────────────────────────────────────
+function playAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(440, ctx.currentTime + 0.2)
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.4)
+    gain.gain.setValueAtTime(0.3, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.6)
+  } catch(e) { console.log('Audio not available') }
+}
+
+// ── Session Summary ───────────────────────────────────
+let sessionStats = { frames: 0, maxCount: 0, totalCount: 0, alerts: 0, startTime: null }
+
+function startSession() {
+  sessionStats = { frames: 0, maxCount: 0, totalCount: 0, alerts: 0, startTime: Date.now() }
+}
+
+function updateSession(count, risk) {
+  sessionStats.frames++
+  sessionStats.totalCount += count
+  sessionStats.maxCount    = Math.max(sessionStats.maxCount, count)
+  if (risk === 'DANGER' || risk === 'OVERCROWDED' || risk === 'WARNING') {
+    sessionStats.alerts++
+  }
+}
+
+function showSessionSummary() {
+  const duration = sessionStats.startTime
+    ? Math.round((Date.now() - sessionStats.startTime) / 1000)
+    : 0
+  const avg = sessionStats.frames > 0
+    ? Math.round(sessionStats.totalCount / sessionStats.frames) : 0
+
+  document.getElementById('sessionContent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:#0f1117;padding:16px;border-radius:10px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:800;color:#64ffda;">${duration}s</div>
+        <div style="font-size:0.72rem;color:#8892b0;margin-top:4px;">Duration</div>
+      </div>
+      <div style="background:#0f1117;padding:16px;border-radius:10px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:800;color:#64ffda;">${sessionStats.maxCount}</div>
+        <div style="font-size:0.72rem;color:#8892b0;margin-top:4px;">Peak Count</div>
+      </div>
+      <div style="background:#0f1117;padding:16px;border-radius:10px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:800;color:#64ffda;">${avg}</div>
+        <div style="font-size:0.72rem;color:#8892b0;margin-top:4px;">Avg Count</div>
+      </div>
+      <div style="background:#0f1117;padding:16px;border-radius:10px;text-align:center;">
+        <div style="font-size:1.8rem;font-weight:800;color:${sessionStats.alerts > 0 ? '#e74c3c' : '#2ecc71'};">${sessionStats.alerts}</div>
+        <div style="font-size:0.72rem;color:#8892b0;margin-top:4px;">Alerts</div>
+      </div>
+    </div>
+  `
+  document.getElementById('sessionModal').style.display = 'flex'
+}
+
+// ── Zone Config ───────────────────────────────────────
+function renderZoneConfig() {
+  const grid = document.getElementById('zoneConfigGrid')
+  if (!grid) return
+  grid.innerHTML = Array.from({length: 9}, (_, i) => `
+    <div style="background:#0f1117;border:1px solid #2d3561;border-radius:8px;padding:8px;">
+      <div style="font-size:0.65rem;color:#8892b0;margin-bottom:4px;">Zone ${i+1}</div>
+      <input id="zoneName${i+1}" placeholder="Name" value="Zone ${i+1}"
+        style="width:100%;background:transparent;border:none;color:#e0e0e0;font-size:0.75rem;outline:none;margin-bottom:4px;"/>
+      <input id="zoneCap${i+1}" placeholder="Max" type="number"
+        style="width:100%;background:transparent;border:none;color:#64ffda;font-size:0.75rem;outline:none;"/>
+    </div>
+  `).join('')
+}
+
+async function saveZoneConfig() {
+  const config = {}
+  for (let i = 1; i <= 9; i++) {
+    const name = document.getElementById(`zoneName${i}`)?.value || `Zone ${i}`
+    const cap  = parseInt(document.getElementById(`zoneCap${i}`)?.value) || 0
+    config[`zone${i}`] = { name, capacity: cap }
+  }
+  await fetch('/zones/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config)
+  })
+  showToast('✅ Zone config saved!')
+}
+
+// ── Toast Notification ────────────────────────────────
+function showToast(msg) {
+  const toast = document.createElement('div')
+  toast.textContent = msg
+  toast.style.cssText = `
+    position:fixed;bottom:24px;right:24px;
+    background:#1a1f2e;border:1px solid #64ffda;
+    color:#64ffda;padding:12px 20px;border-radius:10px;
+    font-size:0.82rem;font-weight:600;z-index:9999;
+    animation:slideIn 0.3s ease;
+  `
+  document.body.appendChild(toast)
+  setTimeout(() => toast.remove(), 3000)
+}
   let currentMode = 'auto'
 
 function setCrowdMode(mode) {
@@ -767,6 +970,7 @@ async function submitFeedback() {
       websocket = new WebSocket(`${wsProtocol}//${window.location.host}/ws/webcam`);
 
       websocket.onopen = () => {
+        startSession()
         console.log('WebSocket connected');
         webcamActive = true;
         document.getElementById('startCamBtn').disabled = true;
@@ -798,6 +1002,10 @@ async function submitFeedback() {
         document.getElementById('overlayCount').textContent = `People: ${data.person_count} (${data.confidence_min}-${data.confidence_max})`;
         document.getElementById('overlayRisk').textContent  = `Risk: ${data.risk_level}`;
         updateRiskDisplay(data.person_count, data.risk_level, data.message);
+        updateSession(data.person_count, data.risk_level)
+        if (data.risk_level === 'DANGER' || data.risk_level === 'OVERCROWDED') {
+          playAlertSound()
+        }
         if (data.zones) updateZones(data.zones);
       };
 
@@ -812,6 +1020,7 @@ async function submitFeedback() {
   }
 
   function stopWebcam() {
+    showSessionSummary()
     webcamActive = false;
     if (frameInterval) clearInterval(frameInterval);
     if (websocket) websocket.close();
@@ -850,10 +1059,9 @@ async function submitFeedback() {
 
     const formData = new FormData();
     formData.append('file', imageFile);
-    const res = await fetch(`/analyze/image?mode=${currentMode}`, { method: 'POST', body: formData })
 
     try {
-      const res  = await fetch('/analyze/image', { method: 'POST', body: formData });
+    const res = await fetch(`/analyze/image?mode=${currentMode}`, { method: 'POST', body: formData });
       const data = await res.json();
 
       const risk = data.risk_level;
@@ -880,7 +1088,9 @@ async function submitFeedback() {
     } catch(e) {
       alert('Error analyzing image.');
     }
-
+    lastPredictedCount = data.person_count
+    document.getElementById('predictedDisplay').textContent = data.person_count
+    document.getElementById('feedbackWidget').style.display = 'block'
     document.getElementById('imgSpinner').style.display = 'none';
     document.getElementById('imgBtn').disabled = false;
   }
@@ -1008,6 +1218,8 @@ async function loadThresholds() {
   loadHistory();
   loadThresholds();
   setInterval(loadStats, 10000);
+  loadIncidents()
+  renderZoneConfig()
 </script>
 <!-- Feedback Widget -->
 <div id="feedbackWidget" style="display:none;margin-top:16px;padding:16px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;">
@@ -1042,6 +1254,17 @@ async function loadThresholds() {
   </div>
   <div id="feedbackMsg" style="display:none;margin-top:10px;font-size:0.78rem;color:#16a34a;font-weight:600;">
     ✅ Thank you! Model will use this feedback for calibration.
+  </div>
+</div>
+<!-- Session Summary Modal -->
+<div id="sessionModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#1a1f2e;border:1px solid #2d3561;border-radius:16px;padding:32px;max-width:480px;width:90%;">
+    <h2 style="color:#fff;margin-bottom:20px;">📊 Session Summary</h2>
+    <div id="sessionContent"></div>
+    <button onclick="document.getElementById('sessionModal').style.display='none'"
+      style="margin-top:20px;width:100%;padding:12px;background:#64ffda;color:#0f1117;border:none;border-radius:8px;font-weight:700;cursor:pointer;">
+      Close
+    </button>
   </div>
 </div>
 </body>

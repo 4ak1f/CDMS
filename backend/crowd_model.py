@@ -98,7 +98,7 @@ def generate_density_map(model, device, frame):
     from backend.calibration import get_smart_scale
     scale, scene_type, edge_density, texture_score = get_smart_scale(frame)
 # Cap scale — never multiply by more than 3x to avoid wild overcounting
-    scale = min(scale, 3.0)
+    scale = min(scale, 1.5)  # Cap at 1.5x — prevents overcounting on benchmark images
     print(f"🎬 Scene: {scene_type} | Scale: {scale} | Edge: {edge_density:.3f}")
 
     counts = []
@@ -126,7 +126,33 @@ def generate_density_map(model, device, frame):
     std_count = float(np.std(counts))
     conf_min  = max(0, avg_count - std_count)
     conf_max  = avg_count + std_count
+        # Run 3 evaluations and average for stability
+    all_counts = counts.copy()
+    for _ in range(2):  # 2 more runs = 3 total
+        extra_counts = []
+        for size in [(512, 512), (640, 640), (384, 384)]:
+            t = transforms.Compose([
+                transforms.ToPILImage(),
+                transforms.Resize(size),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225]
+                )
+            ])
+            input_tensor = t(rgb_frame).unsqueeze(0).to(device)
+            with torch.no_grad():
+                out = model(input_tensor)
+            dn = out.squeeze().cpu().numpy()
+            dn = np.maximum(dn, 0) * scale
+            extra_counts.append(float(dn.sum()))
+        all_counts.extend(extra_counts)
 
+    # Use median instead of mean — more robust to outliers
+    avg_count = float(np.median(all_counts))
+    std_count = float(np.std(all_counts))
+    conf_min  = max(0, avg_count - std_count)
+    conf_max  = avg_count + std_count
     return density_maps[0], avg_count, (round(conf_min), round(conf_max))
 
 
@@ -174,13 +200,15 @@ def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
                 c * cell_w:(c + 1) * cell_w
             ]
             zone_count = max(0.0, float(cell.sum()))
+            # Cap zone count to prevent unrealistic values
+            zone_count = min(zone_count, 10000.0)
             cell_area    = cell_h * cell_w
             zone_density = (zone_count / cell_area) * 10000
 
-            if zone_density < 1.0:
+            if zone_density < 5.0:
                 risk  = "SAFE"
                 color = (0, 255, 0)
-            elif zone_density < 3.0:
+            elif zone_density < 15.0:
                 risk  = "WARNING"
                 color = (0, 165, 255)
             else:

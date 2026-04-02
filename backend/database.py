@@ -177,3 +177,100 @@ def get_all_feedback(limit=50):
     except:
         conn.close()
         return []    
+    
+def log_incident(person_count, density_score, risk_level, message, zone_data=None):
+    """Logs only WARNING/DANGER events to separate incident table."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS incidents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            person_count INTEGER,
+            density_score REAL,
+            risk_level TEXT,
+            message TEXT,
+            zone_data TEXT
+        )
+    """)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        INSERT INTO incidents (timestamp, person_count, density_score, risk_level, message, zone_data)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (timestamp, person_count, density_score, risk_level, message,
+          str(zone_data) if zone_data else None))
+    conn.commit()
+    conn.close()
+
+
+def get_incidents(limit=50):
+    """Gets recent incidents."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            SELECT timestamp, person_count, density_score, risk_level, message
+            FROM incidents ORDER BY id DESC LIMIT ?
+        """, (limit,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [{"timestamp": r[0], "person_count": r[1],
+                 "density_score": r[2], "risk_level": r[3], "message": r[4]}
+                for r in rows]
+    except:
+        conn.close()
+        return []
+
+
+def clear_detections():
+    """Clears all detection history."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM detections")
+    conn.commit()
+    conn.close()
+
+
+def archive_old_detections(days=30):
+    """Removes detections older than X days."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        DELETE FROM detections
+        WHERE timestamp < datetime('now', ?)
+    """, (f'-{days} days',))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted
+
+
+def save_zone_config(zones_config):
+    """Saves zone naming and capacity config."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY, value TEXT
+        )
+    """)
+    cursor.execute("INSERT OR REPLACE INTO settings VALUES (?, ?)",
+                   ("zone_config", str(zones_config)))
+    conn.commit()
+    conn.close()
+
+
+def get_zone_config():
+    """Gets zone config."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT value FROM settings WHERE key='zone_config'")
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            import ast
+            return ast.literal_eval(row[0])
+    except:
+        conn.close()
+    return {}
