@@ -358,9 +358,9 @@
       <span class="material-symbols-outlined" style="font-size:20px;">sensors</span>
       <span class="font-mono text-[11px] uppercase tracking-widest font-semibold">Live View</span>
     </div>
-    <div class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 text-outline hover:bg-surface-container rounded-xl cursor-pointer transition-colors" onclick="navigateTo('zonemonitor')">
-      <span class="material-symbols-outlined" style="font-size:20px;">grid_view</span>
-      <span class="font-mono text-[11px] uppercase tracking-widest">Zone Monitor</span>
+    <div class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 text-outline hover:bg-surface-container rounded-xl cursor-pointer transition-colors" onclick="document.getElementById('systemMonitorPanel')?.scrollIntoView({behavior:'smooth'})">
+      <span class="material-symbols-outlined" style="font-size:20px;">monitor_heart</span>
+      <span class="font-mono text-[11px] uppercase tracking-widest">System Monitor</span>
     </div>
     <div class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 text-outline hover:bg-surface-container rounded-xl cursor-pointer transition-colors" onclick="navigateTo('riskanalysis')">
       <span class="material-symbols-outlined" style="font-size:20px;">warning</span>
@@ -564,37 +564,68 @@
         </div>
       </div>
 
-      <!-- Zone Monitor (3 cols) -->
-      <div class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm p-5 flex flex-col" style="max-height:440px;overflow-y:auto;">
+      <!-- System Monitor (3 cols) -->
+      <div id="systemMonitorPanel" class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm p-5 flex flex-col" style="max-height:440px;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4 shrink-0">
-          <h3 class="text-[10px] font-bold uppercase tracking-widest text-outline">Zone Monitor</h3>
-          <span class="font-mono text-[10px] font-bold" style="color:#2563eb;">GRID 3×3</span>
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-outline">System Monitor</h3>
+          <span id="feedStatus" class="font-mono text-[10px] font-bold" style="color:#16a34a;">● IDLE</span>
         </div>
 
-        <!-- Zone display grid (id="zoneGrid") — innerHTML replaced by updateZones() -->
-        <div class="zone-grid shrink-0" id="zoneGrid">
-          <div class="zone-cell safe"><div class="zn">Zone 1</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 2</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 3</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 4</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 5</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 6</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 7</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 8</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
-          <div class="zone-cell safe"><div class="zn">Zone 9</div><div class="zr">SAFE</div><div class="zc">~0</div></div>
+        <!-- SECTION 1: CAMERA HEALTH -->
+        <div class="mb-4 shrink-0">
+          <div class="text-[9px] font-semibold text-outline uppercase tracking-widest mb-2">Camera Health</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">Feed</div>
+              <div id="feedStatusTile" class="font-mono text-[12px] font-bold" style="color:#6b7280;">Idle</div>
+            </div>
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">FPS</div>
+              <div id="fpsCounter" class="font-mono text-[12px] font-bold text-on-surface">—</div>
+            </div>
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">Inference</div>
+              <div id="inferenceTime" class="font-mono text-[12px] font-bold text-on-surface">—</div>
+            </div>
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">CPU</div>
+              <div id="cpuUsage" class="font-mono text-[12px] font-bold text-on-surface">—</div>
+            </div>
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">Memory</div>
+              <div id="memUsage" class="font-mono text-[12px] font-bold text-on-surface">—</div>
+            </div>
+            <div class="mini-stat">
+              <div class="text-[9px] text-outline uppercase tracking-wider">Uptime</div>
+              <div id="sysUptime" class="font-mono text-[12px] font-bold text-on-surface">—</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Zone config — SEPARATE from zoneGrid so updateZones() doesn't wipe it -->
-        <div class="mt-4 pt-4 border-t border-outline-variant/20 shrink-0">
-          <div class="text-[10px] font-semibold text-outline uppercase tracking-widest mb-2">Zone Names & Capacity</div>
-          <!-- id="zoneConfigGrid" filled by renderZoneConfig() -->
-          <div id="zoneConfigGrid" class="grid grid-cols-3 gap-1.5"></div>
-          <button onclick="saveZoneConfig()"
-            class="w-full mt-3 py-2 text-white text-[11px] font-semibold rounded-lg transition-opacity hover:opacity-90"
-            style="background:#2563eb;">
-            Save Zone Config
-          </button>
+        <!-- SECTION 2: LIVE ANALYTICS -->
+        <div class="pt-3 border-t border-outline-variant/20 shrink-0">
+          <div class="text-[9px] font-semibold text-outline uppercase tracking-widest mb-2">Live Analytics</div>
+          <!-- Sparkline SVG -->
+          <svg id="sparklineSvg" viewBox="0 0 200 40" preserveAspectRatio="none"
+               style="width:100%;height:40px;display:block;background:#f8fafc;border-radius:6px;margin-bottom:6px;">
+            <polyline id="sparklinePolyline" fill="none" stroke="#2563eb" stroke-width="1.5" points=""/>
+          </svg>
+          <div class="text-[9px] text-outline mb-3">Crowd count — last 20 readings</div>
+          <!-- Alert Frequency -->
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[9px] text-outline uppercase tracking-wider">Alerts / 30 min</span>
+            <span id="alertFrequency" class="font-mono text-[11px] font-bold text-on-surface">—</span>
+          </div>
+          <!-- Risk Timeline -->
+          <div class="flex items-center justify-between">
+            <span class="text-[9px] text-outline uppercase tracking-wider">Risk timeline</span>
+            <div id="riskTimeline" class="flex gap-0.5"></div>
+          </div>
         </div>
+
+        <!-- Hidden zone elements for JS compatibility -->
+        <div id="zoneGrid" style="display:none;"></div>
+        <div id="zoneConfigGrid" style="display:none;"></div>
       </div>
     </div>
 
@@ -1359,6 +1390,10 @@ let websocket = null;
 let webcamActive = false;
 let trendChart = null;
 let frameInterval = null;
+let countHistory = [];
+let riskHistory = [];
+let lastFrameTime = Date.now();
+let currentFps = 0;
 
 // ── Init Chart ──
 function initChart() {
@@ -1453,6 +1488,11 @@ async function startWebcam() {
       document.getElementById('camDot').classList.add('active');
       document.getElementById('camStatus').textContent = 'Live';
       document.getElementById('webcamOverlay').style.display = 'block';
+      const fs = document.getElementById('feedStatus');
+      if (fs) { fs.textContent = '● LIVE'; fs.style.color = '#2563eb'; }
+      const fst = document.getElementById('feedStatusTile');
+      if (fst) { fst.textContent = 'Live'; fst.style.color = '#2563eb'; }
+      lastFrameTime = Date.now();
 
       // Send frames every 500ms
       frameInterval = setInterval(() => {
@@ -1482,6 +1522,23 @@ async function startWebcam() {
         playAlertSound()
       }
       if (data.zones) updateZones(data.zones);
+
+      // ── System Monitor updates ──
+      const now = Date.now();
+      currentFps = Math.round(1000 / Math.max(now - lastFrameTime, 1));
+      lastFrameTime = now;
+      const fpsEl = document.getElementById('fpsCounter');
+      if (fpsEl) fpsEl.textContent = currentFps + ' fps';
+      if (data.inference_ms != null) {
+        const infEl = document.getElementById('inferenceTime');
+        if (infEl) infEl.textContent = data.inference_ms + ' ms';
+      }
+      countHistory.push(data.person_count);
+      if (countHistory.length > 20) countHistory.shift();
+      riskHistory.push(data.risk_level);
+      if (riskHistory.length > 20) riskHistory.shift();
+      updateSparkline();
+      updateRiskTimeline();
     };
 
     websocket.onerror = () => {
@@ -1506,6 +1563,12 @@ function stopWebcam() {
   document.getElementById('camDot').classList.remove('active');
   document.getElementById('camStatus').textContent = 'Camera off';
   document.getElementById('webcamOverlay').style.display = 'none';
+  const fs = document.getElementById('feedStatus');
+  if (fs) { fs.textContent = '● IDLE'; fs.style.color = '#16a34a'; }
+  const fst = document.getElementById('feedStatusTile');
+  if (fst) { fst.textContent = 'Idle'; fst.style.color = '#6b7280'; }
+  const fpsEl = document.getElementById('fpsCounter');
+  if (fpsEl) fpsEl.textContent = '—';
 
   // Clear canvas
   const canvas = document.getElementById('webcamCanvas');
@@ -2007,6 +2070,65 @@ function setModeActive(btn) {
   });
   btn.classList.add('mode-btn-active');
 }
+
+// ── System Monitor functions ──────────────────────────────────────
+function updateSparkline() {
+  const polyline = document.getElementById('sparklinePolyline');
+  if (!polyline || countHistory.length === 0) return;
+  const w = 200, h = 40, pad = 2;
+  const maxVal = Math.max(...countHistory, 1);
+  const pts = countHistory.map((v, i) => {
+    const x = pad + (i / (countHistory.length - 1 || 1)) * (w - pad * 2);
+    const y = h - pad - (v / maxVal) * (h - pad * 2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  polyline.setAttribute('points', pts);
+}
+
+function updateRiskTimeline() {
+  const container = document.getElementById('riskTimeline');
+  if (!container) return;
+  const colorMap = { SAFE: '#16a34a', WARNING: '#d97706', DANGER: '#dc2626', OVERCROWDED: '#7c3aed' };
+  container.innerHTML = riskHistory.map(r =>
+    `<div style="width:7px;height:14px;border-radius:2px;background:${colorMap[r] || '#9ca3af'}" title="${r}"></div>`
+  ).join('');
+}
+
+async function updateSystemStats() {
+  try {
+    const r = await fetch('/system/stats');
+    if (!r.ok) return;
+    const d = await r.json();
+    const cpu = document.getElementById('cpuUsage');
+    if (cpu) cpu.textContent = d.cpu_percent + '%';
+    const mem = document.getElementById('memUsage');
+    if (mem) mem.textContent = d.memory_percent + '%';
+    const upt = document.getElementById('sysUptime');
+    if (upt) {
+      const s = d.uptime_seconds;
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+      upt.textContent = `${h}h ${m}m`;
+    }
+  } catch(e) {}
+}
+
+async function updateAlertFreq() {
+  try {
+    const r = await fetch('/alerts');
+    if (!r.ok) return;
+    const alerts = await r.json();
+    const thirtyMinsAgo = Date.now() - 30 * 60 * 1000;
+    const recent = alerts.filter(a => new Date(a.timestamp).getTime() > thirtyMinsAgo);
+    const el = document.getElementById('alertFrequency');
+    if (el) el.textContent = recent.length;
+  } catch(e) {}
+}
+
+// Boot: system monitor polling
+setInterval(updateSystemStats, 3000);
+updateSystemStats();
+setInterval(updateAlertFreq, 30000);
+updateAlertFreq();
 
 // ── Extra: SVG gauge arc update (supplements updateRiskDisplay) ──
 const _origUpdateRiskDisplay = updateRiskDisplay;

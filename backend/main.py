@@ -474,8 +474,8 @@ async def save_zones(request: Request):
 def get_system_stats():
     import psutil
     return {
-        "cpu_percent":    psutil.cpu_percent(interval=0.1),
-        "memory_percent": psutil.virtual_memory().percent,
+        "cpu_percent":    round(psutil.cpu_percent(interval=0.1), 1),
+        "memory_percent": round(psutil.virtual_memory().percent, 1),
         "memory_used_gb": round(psutil.virtual_memory().used / (1024**3), 1),
         "uptime_seconds": round(time.time() - psutil.boot_time()),
     }
