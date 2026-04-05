@@ -23,6 +23,7 @@ import numpy as np
 import base64
 import os
 import asyncio
+import time
 from backend.database import init_db, log_detection, get_all_detections, get_thresholds, save_thresholds, store_feedback, get_feedback_stats, get_all_feedback
 from backend.calibration import get_smart_scale
 app = FastAPI(title="CDMS - Crowd Disaster Management System")
@@ -51,6 +52,7 @@ def process_frame(frame, crowd_mode="auto"):
     Full processing pipeline for a single frame.
     Returns: annotated_frame, density_result, zones, alert, flow_result, confidence
     """
+    frame_start = time.time()
     h, w = frame.shape[:2]
 
     # Step 1: Primary engine — custom trained model
@@ -140,8 +142,8 @@ def process_frame(frame, crowd_mode="auto"):
             density_result["message"],
             report_path
         )
-
-    return annotated_frame, density_result, zones, alert, flow_result, confidence
+    inference_ms = round((time.time() - frame_start) * 1000)
+    return annotated_frame, density_result, zones, alert, flow_result, confidence, inference_ms
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -159,7 +161,7 @@ async def analyze_image(file: UploadFile = File(...), mode: str = "auto"):
     if frame is None:
         return JSONResponse({"error": "Invalid image file"}, status_code=400)
 
-    annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame, mode)
+    annotated_frame, density_result, zones, alert, flow_result, confidence, inference_ms = process_frame(frame, mode)
 
     _, buffer = cv2.imencode(".jpg", annotated_frame)
     img_base64 = base64.b64encode(buffer).decode("utf-8")
@@ -173,6 +175,7 @@ async def analyze_image(file: UploadFile = File(...), mode: str = "auto"):
         "confidence_min":  confidence[0],
         "confidence_max":  confidence[1],
         "alert":           alert,
+        "inference_ms":    inference_ms,
         "zones": [{
             "zone":    z["zone"],
             "count":   z["count"],
@@ -209,14 +212,14 @@ async def analyze_video(file: UploadFile = File(...), mode: str = "auto"):
         if frame_num % 30 != 0:
             continue
         frame = cv2.resize(frame, (640, 360))
-        _, density_result, zones, _, _, _ = process_frame(frame, mode)
+        _, density_result, zones, _, _, _, _ = process_frame(frame, mode)
         frame_results.append(density_result)
 
     cap.release()
 
     if not frame_results:
         return JSONResponse({"error": "Could not process video"}, status_code=400)
-
+    
     counts     = [r["person_count"] for r in frame_results]
     scores     = [r["density_score"] for r in frame_results]
     risk_levels = [r["risk_level"] for r in frame_results]
@@ -257,7 +260,7 @@ async def webcam_stream(websocket: WebSocket):
             if frame is None:
                 continue
 
-            annotated_frame, density_result, zones, alert, flow_result, confidence = process_frame(frame, crowd_mode)
+            annotated_frame, density_result, zones, alert, flow_result, confidence, inference_ms = process_frame(frame, crowd_mode)
 
             _, buffer  = cv2.imencode(".jpg", annotated_frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             result_b64 = base64.b64encode(buffer).decode("utf-8")
@@ -271,6 +274,7 @@ async def webcam_stream(websocket: WebSocket):
                 "confidence_min": confidence[0],
                 "confidence_max": confidence[1],
                 "alert":          alert is not None,
+                "inference_ms":   inference_ms,
                 "zones": [{
                     "zone":  z["zone"],
                     "count": z["count"],
@@ -464,3 +468,14 @@ async def save_zones(request: Request):
     body = await request.json()
     save_zone_config(body)
     return {"message": "Zone config saved"}
+
+
+@app.get("/system/stats")
+def get_system_stats():
+    import psutil
+    return {
+        "cpu_percent":    psutil.cpu_percent(interval=0.1),
+        "memory_percent": psutil.virtual_memory().percent,
+        "memory_used_gb": round(psutil.virtual_memory().used / (1024**3), 1),
+        "uptime_seconds": round(time.time() - psutil.boot_time()),
+    }
