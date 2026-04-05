@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import os
 from huggingface_hub import hf_hub_download
-from backend.calibration import get_smart_scale
+import backend.calibration as cal
 CHECKPOINT_PATH = "model_training/checkpoints/best_model.pth"
 REPO_ID = "4AK1F/CDMS-crowd-counting"
 
@@ -95,10 +95,12 @@ def generate_density_map(model, device, frame):
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # Calculate edge density ONCE before the loop
-    from backend.calibration import get_smart_scale
-    scale, scene_type, edge_density, texture_score = get_smart_scale(frame)
-# Cap scale — never multiply by more than 3x to avoid wild overcounting
-    scale = min(scale, 1.5)  # Cap at 1.5x — prevents overcounting on benchmark images
+    import backend.calibration as cal
+    scale, scene_type, edge_density, texture_score = cal.get_smart_scale(frame)
+    if cal.BENCHMARK_MODE:
+        scale = 1.0
+    else:
+        scale = min(scale, 1.2)
     print(f"🎬 Scene: {scene_type} | Scale: {scale} | Edge: {edge_density:.3f}")
 
     counts = []

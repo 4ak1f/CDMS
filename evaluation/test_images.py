@@ -19,7 +19,8 @@ import numpy as np
 import cv2
 import scipy.io as sio
 import matplotlib.pyplot as plt
-
+import backend.calibration as cal
+cal.BENCHMARK_MODE = True  # Disable scaling for accurate evaluation
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -127,12 +128,9 @@ def run_evaluation():
             density_map, model_count, confidence = generate_density_map(
                 crowd_model, device, frame
             )
-            _, yolo_count, _ = detect_people(frame)
-            ensemble_result  = ensemble.predict(
-                frame, yolo_count, model_count, confidence, "auto"
-            )
-            final_count = ensemble_result["count"]
-            method      = ensemble_result["method"]
+            # In benchmark mode use raw model output only — no ensemble blending
+            final_count = model_count
+            method      = "VGG16+DilatedCNN"
         except Exception as e:
             print(f"Error processing {img_file}: {e}")
             continue

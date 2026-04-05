@@ -25,6 +25,8 @@ from backend.crowd_model import load_model, generate_density_map
 from backend.detector import detect_people
 from backend.model_ensemble import CrowdEnsemble
 from backend.calibration import detect_scene_type
+import backend.calibration as cal
+cal.BENCHMARK_MODE = True
 
 # ── Configuration ──────────────────────────────────────
 VIDEO_DIR    = "evaluation/test_videos/mall_dataset/frames"

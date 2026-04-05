@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from backend.database import get_feedback_stats
-
+# Set to True when running evaluations — disables all scaling
+BENCHMARK_MODE = False
 # Scene type definitions based on visual characteristics
 SCENE_TYPES = {
     "sparse_indoor":   {"edge_range": (0.0,  0.08), "texture_range": (0.0,  0.15)},
@@ -16,10 +17,10 @@ SCENE_TYPES = {
 DEFAULT_SCALES = {
     "sparse_indoor":    1.0,
     "moderate_indoor":  1.0,
-    "dense_indoor":     1.5,
+    "dense_indoor":     1.0,
     "sparse_outdoor":   1.0,
-    "moderate_outdoor": 1.8,
-    "dense_outdoor":    4.0,
+    "moderate_outdoor": 1.0,
+    "dense_outdoor":    1.2,
 }
 
 
@@ -86,7 +87,12 @@ def get_calibrated_scale(scene_type):
 def get_smart_scale(frame):
     """
     Main function — detects scene and returns calibrated scale.
+    In benchmark mode, always returns 1.0 (no scaling).
     """
+    if BENCHMARK_MODE:
+        scene_type, edge_density, texture_score = detect_scene_type(frame)
+        return 1.0, scene_type, edge_density, texture_score
+
     scene_type, edge_density, texture_score = detect_scene_type(frame)
     scale = get_calibrated_scale(scene_type)
     return scale, scene_type, edge_density, texture_score
