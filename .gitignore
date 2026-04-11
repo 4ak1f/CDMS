@@ -4,14 +4,11 @@ __pycache__/
 uploads/
 logs/cdms.db
 model_training/dataset/
-model_training/checkpoints/best_model.pth
 yolov8n.pt
 *.zip
 *.matmodel_training/dataset/
-model_training/checkpoints/
 yolov8n.pt
 model_training/dataset/
-model_training/checkpoints/
 yolov8n.pt
 yolov8m.pt
 yolov8n-seg.pt
