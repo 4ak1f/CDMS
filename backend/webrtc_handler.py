@@ -8,9 +8,20 @@ import cv2
 import numpy as np
 import time
 import fractions
-from av import VideoFrame
-from aiortc import RTCPeerConnection, RTCSessionDescription, MediaStreamTrack
-from aiortc.contrib.media import MediaRelay
+try:
+    from av import VideoFrame
+    AV_AVAILABLE = True
+except ImportError:
+    AV_AVAILABLE = False
+    print("⚠️  av not available — WebRTC video processing disabled")
+
+try:
+    from aiortc import RTCPeerConnection, RTCSessionDescription, MediaStreamTrack
+    from aiortc.contrib.media import MediaRelay
+    AIORTC_AVAILABLE = True
+except ImportError:
+    AIORTC_AVAILABLE = False
+    print("⚠️  aiortc not available — WebRTC disabled")
 
 from backend.camera_session import join_session, leave_session, update_camera
 

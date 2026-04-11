@@ -66,3 +66,10 @@ uvicorn==0.42.0
 uvloop==0.22.1
 watchfiles==1.1.1
 websockets==16.0
+av==13.1.0
+aiortc==1.9.0
+supabase==2.15.2
+python-jose[cryptography]==3.5.0
+bcrypt==4.3.0
+apscheduler==3.11.0
+twilio==9.6.2
