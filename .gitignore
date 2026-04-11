@@ -14,3 +14,6 @@ yolov8m.pt
 yolov8n-seg.pt
 yolov8n.pt
 .env
+logs/cdms.db
+logs/*.db
+logs/reports/
