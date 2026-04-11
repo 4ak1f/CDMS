@@ -4,6 +4,14 @@ import os
 
 DB_PATH = "logs/cdms.db"
 
+
+def get_db():
+    """Returns a database connection with row_factory set for dict-like rows."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
 def init_db():
     """Creates the database and tables if they don't exist."""
     os.makedirs("logs", exist_ok=True)
@@ -19,6 +27,20 @@ def init_db():
             message TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS location_config (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT DEFAULT 'Main Location',
+            max_capacity INTEGER DEFAULT 100,
+            caution_pct REAL DEFAULT 0.5,
+            warning_pct REAL DEFAULT 0.75,
+            critical_pct REAL DEFAULT 0.9,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    cursor.execute(
+        "INSERT OR IGNORE INTO location_config (id, name, max_capacity) VALUES (1, 'Main Location', 100)"
+    )
     conn.commit()
     conn.close()
 
@@ -274,3 +296,26 @@ def get_zone_config():
     except:
         conn.close()
     return {}
+
+
+def get_location_config() -> dict:
+    """Gets location capacity configuration."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM location_config WHERE id = 1").fetchone()
+    conn.close()
+    if not row:
+        return {"id": 1, "name": "Main Location", "max_capacity": 100,
+                "caution_pct": 0.5, "warning_pct": 0.75, "critical_pct": 0.9}
+    return dict(row)
+
+
+def save_location_config(name: str, max_capacity: int,
+                          caution_pct: float, warning_pct: float, critical_pct: float):
+    """Saves location capacity configuration."""
+    conn = get_db()
+    conn.execute("""
+        UPDATE location_config SET name=?, max_capacity=?, caution_pct=?,
+        warning_pct=?, critical_pct=?, updated_at=CURRENT_TIMESTAMP WHERE id=1
+    """, (name, max_capacity, caution_pct, warning_pct, critical_pct))
+    conn.commit()
+    conn.close()

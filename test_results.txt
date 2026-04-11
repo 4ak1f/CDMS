@@ -1,0 +1,152 @@
+
+═══════════════════════════════════════════════════════
+  CDMS System Test v2 — 2026-04-11 00:50
+  Target: https://localhost:8000
+═══════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────
+  1. Authentication
+───────────────────────────────────────────────────────
+  ✅ Login returns JWT token → token received
+  ✅ Login returns user role → admin
+  ✅ /auth/me returns user → admin@cdms.local
+  ✅ Admin can list users → 1 users
+
+───────────────────────────────────────────────────────
+  2. Core Endpoints
+───────────────────────────────────────────────────────
+  ✅ /stats responds → 5ms
+  ✅ /system/stats responds → 147ms
+  ✅ /thresholds responds → 10ms
+  ✅ /history responds → 8ms
+  ✅ /incidents responds → 8ms
+  ✅ /alerts responds → 6ms
+  ✅ /calibration responds → 8ms
+  ✅ /feedback responds → 6ms
+  ✅ /zones/config responds → 6ms
+  ✅ /location/config responds → 5ms
+  ✅ /schedule/config responds → 5ms
+
+───────────────────────────────────────────────────────
+  3. System Stats Validation
+───────────────────────────────────────────────────────
+  ✅ CPU % in range → 0.0%
+  ✅ RAM % in range → 85.4%
+  ✅ Uptime readable → 47d 14h 42m
+  ✅ Model MAE present → 2.52
+  ✅ Model MAE < 20 → 2.52
+
+───────────────────────────────────────────────────────
+  4. Image Analysis
+───────────────────────────────────────────────────────
+  ✅ Analysis returns 200 → 1872ms
+  ✅ Returns person_count → 0
+  ✅ Returns risk_level → SAFE
+  ✅ Returns scene_type → sparse_indoor
+  ✅ Returns fingerprint → medium_sparse_smooth
+  ✅ Returns confidence → 0.0
+  ✅ Returns flow_direction → Unknown
+  ✅ Returns anomaly field → present
+  ✅ Analysis < 15s → 1872ms
+  ✅ Count is integer >= 0
+  ✅ Count < 2000 (sane) → 0
+  ✅ Mode sparse works → 763ms
+  ✅ Mode moderate works → 1054ms
+  ✅ Mode dense works → 760ms
+
+───────────────────────────────────────────────────────
+  5. Feedback & Scene Learning
+───────────────────────────────────────────────────────
+  ✅ Feedback accepted → 200
+  ✅ Returns corrections_so_far → 2
+  ✅ Returns current_scale → 0.6
+  ✅ Has scene_learning → 3 scenes
+  ✅ Has converged_scenes
+
+───────────────────────────────────────────────────────
+  6. Threshold Management
+───────────────────────────────────────────────────────
+  ✅ Thresholds saved → {'warning_threshold': 15.0, 'danger_threshold': 30.0, 'warning_label': 'WARNING', 'danger_label': 'OVERCROWDED', 'safe_label': 'SAFE'}
+  ✅ Invalid thresholds rejected → HTTP 400
+
+───────────────────────────────────────────────────────
+  7. Location Capacity
+───────────────────────────────────────────────────────
+  ✅ Location config readable → {'id': 1, 'name': 'Test Location', 'max_capacity': 200, 'caution_pct': 0.5, 'warning_pct': 0.75, 'critical_pct': 0.9, 'updated_at': '2026-04-10 19:12:10'}
+
+───────────────────────────────────────────────────────
+  8. Anomaly Detection
+───────────────────────────────────────────────────────
+  ✅ Anomaly endpoint works → 200
+  ✅ Has anomalies list
+  ✅ Anomaly history works
+
+───────────────────────────────────────────────────────
+  9. Multi-Camera Session
+───────────────────────────────────────────────────────
+  ✅ Session created → 200
+  ✅ Session has code → A69E6EAF
+  ✅ Session has join_url
+  ✅ Session cameras endpoint
+  ✅ Session aggregate endpoint
+  ✅ Current session readable
+
+───────────────────────────────────────────────────────
+  10. Cloud Sync (Supabase)
+───────────────────────────────────────────────────────
+  ✅ Cloud status reachable
+  ✅ Supabase connected → True
+  ✅ Cloud has records → 57 records
+
+───────────────────────────────────────────────────────
+  11. Scheduled Analysis
+───────────────────────────────────────────────────────
+  ✅ Schedule config readable → {'enabled': False, 'interval_minutes': 5, 'last_run': None, 'last_result': None, 'run_count': 0}
+  ✅ Schedule started → {'enabled': True, 'interval_minutes': 5, 'last_run': None, 'last_result': None, 'run_count': 0}
+
+───────────────────────────────────────────────────────
+  12. Dead Man's Switch
+───────────────────────────────────────────────────────
+  ✅ Deadman status readable → {'enabled': False, 'timeout_sec': 300, 'last_heartbeat': 1775848848.827671, 'seconds_since_heartbeat': 1.4, 'seconds_until_trigger': None}
+  ✅ Deadman enabled → {'enabled': True, 'timeout_sec': 1800, 'last_heartbeat': 1775848848.827671, 'seconds_since_heartbeat': 1.5, 'seconds_until_trigger': 1798.5}
+  ✅ Deadman disabled
+
+───────────────────────────────────────────────────────
+  13. SMS Alert Config
+───────────────────────────────────────────────────────
+  ✅ SMS status readable
+  ✅ SMS status field present → False
+
+───────────────────────────────────────────────────────
+  14. Analytics
+───────────────────────────────────────────────────────
+  ✅ Weekly comparison works
+  ❌ Weekly endpoint error → name 'datetime' is not defined
+
+───────────────────────────────────────────────────────
+  15. Auth Security
+───────────────────────────────────────────────────────
+  ✅ Invalid token rejected → HTTP 403
+  ✅ No token rejected → HTTP 403
+
+───────────────────────────────────────────────────────
+  16. Performance
+───────────────────────────────────────────────────────
+  ✅ GET /stats under 500ms → 6ms
+  ✅ GET /system/stats under 600ms → 139ms
+  ✅ GET /thresholds under 200ms → 7ms
+  ✅ GET /calibration under 500ms → 7ms
+  ✅ GET /history under 1000ms → 6ms
+
+═══════════════════════════════════════════════════════
+  Score: 97%  |  121✅  3⚠️   1❌  (125 checks)
+═══════════════════════════════════════════════════════
+
+  Failed:
+    •   Weekly endpoint error — name 'datetime' is not defined
+
+  Warnings:
+    • Invalid thresholds — HTTP 400
+    • Users without valid token — HTTP 403
+    • Users without any token — HTTP 403
+

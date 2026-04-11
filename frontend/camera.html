@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CDMS Camera</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #05070f;
+    color: white;
+    font-family: 'Inter', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  #video {
+    width: 100%;
+    flex: 1;
+    object-fit: cover;
+    background: #000;
+  }
+  #canvas { display: none; }
+  #status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 16px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 10;
+  }
+  #logo {
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+  #conn-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 100px;
+    background: rgba(220,38,38,0.3);
+    border: 1px solid rgba(220,38,38,0.5);
+    color: #fca5a5;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+  #conn-badge.live {
+    background: rgba(5,150,105,0.3);
+    border-color: rgba(5,150,105,0.5);
+    color: #6ee7b7;
+    animation: pulse-badge 2s infinite;
+  }
+  #conn-badge.connecting {
+    background: rgba(245,158,11,0.3);
+    border-color: rgba(245,158,11,0.5);
+    color: #fcd34d;
+  }
+  @keyframes pulse-badge {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  #result-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px 20px 40px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.9) 60%, transparent);
+    z-index: 10;
+    display: none;
+  }
+  #camera-name {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 6px;
+  }
+  #count-display {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1;
+    color: #00ff88;
+    text-shadow: 0 0 30px rgba(0,255,136,0.4);
+    margin-bottom: 4px;
+    font-family: system-ui;
+    transition: color 0.3s;
+  }
+  #count-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  #risk-badge {
+    display: inline-block;
+    padding: 7px 20px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: rgba(5,150,105,0.2);
+    border: 1px solid rgba(5,150,105,0.4);
+    color: #6ee7b7;
+    transition: all 0.3s;
+  }
+  #risk-badge.WARNING {
+    background: rgba(217,119,6,0.2);
+    border-color: rgba(217,119,6,0.4);
+    color: #fcd34d;
+  }
+  #risk-badge.DANGER, #risk-badge.OVERCROWDED {
+    background: rgba(220,38,38,0.2);
+    border-color: rgba(220,38,38,0.4);
+    color: #fca5a5;
+    animation: danger-pulse 1s infinite;
+  }
+  @keyframes danger-pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+    50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(220,38,38,0); }
+  }
+  #controls {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+    width: 80%;
+  }
+  #start-btn {
+    width: 100%;
+    padding: 18px 40px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, #6366f1, #06b6d4);
+    border: none;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+    transition: transform 0.1s;
+  }
+  #start-btn:active { transform: scale(0.97); }
+  #session-info {
+    margin-top: 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+  }
+  #fps-indicator {
+    position: absolute;
+    top: 60px; right: 16px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    font-family: monospace;
+    z-index: 10;
+  }
+  #error-panel {
+    display: none;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 28px 24px;
+    background: rgba(220,38,38,0.15);
+    border: 1px solid rgba(220,38,38,0.3);
+    border-radius: 20px;
+    max-width: 300px;
+    width: 85%;
+    z-index: 20;
+  }
+  #error-icon { font-size: 32px; margin-bottom: 12px; }
+  #error-title { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+  #error-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; }
+  #retry-btn {
+    margin-top: 16px;
+    padding: 10px 28px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #leave-btn {
+    display: none;
+    position: absolute;
+    bottom: 160px; left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 24px;
+    border-radius: 100px;
+    background: rgba(220,38,38,0.15);
+    border: 1px solid rgba(220,38,38,0.25);
+    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<video id="video" autoplay playsinline muted></video>
+<canvas id="canvas" width="640" height="480"></canvas>
+
+<div id="status-bar">
+  <div id="logo">CDMS</div>
+  <div id="conn-badge">OFFLINE</div>
+</div>
+
+<div id="fps-indicator" style="display:none">0 fps</div>
+
+<div id="controls">
+  <button id="start-btn">📷 Start Camera</button>
+  <div id="session-info">Session: {{SESSION_CODE}}</div>
+</div>
+
+<div id="error-panel">
+  <div id="error-icon">⚠️</div>
+  <div id="error-title">Connection Error</div>
+  <div id="error-text"></div>
+  <button id="retry-btn" onclick="location.reload()">Try Again</button>
+</div>
+
+<div id="result-panel">
+  <div id="camera-name">CAMERA</div>
+  <div id="count-display">0</div>
+  <div id="count-label">PEOPLE DETECTED</div>
+  <div id="risk-badge">SAFE</div>
+</div>
+
+<button id="leave-btn">Leave Session</button>
+
+<script>
+const SESSION_CODE = '{{SESSION_CODE}}';
+const BASE = window.location.origin;
+
+const video       = document.getElementById('video');
+const canvas      = document.getElementById('canvas');
+const connBadge   = document.getElementById('conn-badge');
+const controls    = document.getElementById('controls');
+const resultPanel = document.getElementById('result-panel');
+const countEl     = document.getElementById('count-display');
+const riskEl      = document.getElementById('risk-badge');
+const camNameEl   = document.getElementById('camera-name');
+const errorPanel  = document.getElementById('error-panel');
+const errorText   = document.getElementById('error-text');
+const leaveBtn    = document.getElementById('leave-btn');
+const startBtn    = document.getElementById('start-btn');
+const fpsEl       = document.getElementById('fps-indicator');
+
+document.getElementById('start-btn').addEventListener('click', startCamera);
+document.getElementById('leave-btn').addEventListener('click', leaveSession);
+
+let cameraId    = null;
+let cameraName  = null;
+let running     = false;
+let frameCount  = 0;
+let lastFpsTime = Date.now();
+
+async function startCamera() {
+  controls.style.display = 'none';
+  connBadge.textContent  = 'REQUESTING CAMERA';
+  connBadge.className    = 'connecting';
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width:  { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      audio: false
+    });
+    video.srcObject = stream;
+    await video.play();
+
+    // Register camera with session
+    connBadge.textContent = 'JOINING SESSION';
+    const isMobile = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent);
+    cameraName = isMobile ? '📱 Mobile Camera' : '💻 Webcam';
+
+    const joinRes = await fetch(`${BASE}/session/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_code: SESSION_CODE,
+        camera_name:  cameraName,
+      })
+    }).then(r => r.json());
+
+    if (joinRes.error) {
+      showError('Session not found', 'This session may have expired. Ask the operator to create a new session.');
+      return;
+    }
+
+    cameraId   = joinRes.id;
+    cameraName = joinRes.name;
+    camNameEl.textContent = cameraName;
+
+    connBadge.textContent     = 'LIVE';
+    connBadge.className       = 'live';
+    resultPanel.style.display = 'block';
+    leaveBtn.style.display    = 'block';
+    fpsEl.style.display       = 'block';
+    running = true;
+
+    // Prevent screen sleep
+    if ('wakeLock' in navigator) {
+      navigator.wakeLock.request('screen').catch(() => {});
+    }
+
+    // Start capture loop
+    captureLoop();
+
+  } catch(e) {
+    if (e.name === 'NotAllowedError') {
+      showError('Camera Permission Denied',
+        'Please allow camera access:\n1. Tap the lock icon in address bar\n2. Allow Camera\n3. Reload the page');
+    } else if (e.name === 'NotFoundError') {
+      showError('No Camera Found', 'Could not find a camera on this device.');
+    } else {
+      showError('Camera Error', e.message || 'Unknown error starting camera.');
+    }
+  }
+}
+
+async function captureLoop() {
+  if (!running) return;
+
+  try {
+    // Draw frame to canvas
+    const ctx = canvas.getContext('2d');
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert to blob
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, 'image/jpeg', 0.7)
+    );
+
+    // Send to CDMS for analysis
+    const form = new FormData();
+    form.append('file', blob, 'frame.jpg');
+    form.append('session_code', SESSION_CODE);
+    form.append('camera_id', cameraId || '');
+
+    const res = await fetch(`${BASE}/analyze/image?mode=auto&camera_id=${cameraId || ''}&session_code=${SESSION_CODE}`, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      updateDisplay(data);
+
+      // Update camera stats in session
+      if (cameraId) {
+        fetch(`${BASE}/session/update-camera`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_code:  SESSION_CODE,
+            camera_id:     cameraId,
+            person_count:  data.person_count || 0,
+            risk_level:    data.risk_level   || 'SAFE',
+            scene_type:    data.scene_type   || 'unknown',
+          })
+        }).catch(() => {});
+      }
+    }
+
+    // FPS counter
+    frameCount++;
+    const now = Date.now();
+    if (now - lastFpsTime >= 3000) {
+      const fps = (frameCount / ((now - lastFpsTime) / 1000)).toFixed(1);
+      fpsEl.textContent = `${fps} fps`;
+      frameCount  = 0;
+      lastFpsTime = now;
+    }
+
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      console.warn('Frame error:', e.message);
+    }
+  }
+
+  // Capture every 2 seconds — balanced between responsiveness and battery
+  if (running) setTimeout(captureLoop, 2000);
+}
+
+function updateDisplay(data) {
+  const count = data.person_count || 0;
+  const risk  = data.risk_level   || 'SAFE';
+
+  countEl.textContent = count;
+  riskEl.textContent  = risk;
+  riskEl.className    = risk;
+
+  const colors = {
+    SAFE:        '#00ff88',
+    WARNING:     '#fbbf24',
+    DANGER:      '#ff3b5c',
+    OVERCROWDED: '#ff3b5c',
+  };
+  countEl.style.color      = colors[risk] || '#00ff88';
+  countEl.style.textShadow = `0 0 30px ${colors[risk] || '#00ff88'}66`;
+}
+
+function showError(title, msg) {
+  controls.style.display = 'none';
+  connBadge.textContent  = 'ERROR';
+  connBadge.className    = '';
+  document.getElementById('error-title').textContent = title;
+  errorText.textContent  = msg;
+  errorPanel.style.display = 'block';
+}
+
+async function leaveSession() {
+  running = false;
+  video.srcObject?.getTracks().forEach(t => t.stop());
+  connBadge.textContent     = 'LEFT';
+  connBadge.className       = '';
+  resultPanel.style.display = 'none';
+  leaveBtn.style.display    = 'none';
+  fpsEl.style.display       = 'none';
+  controls.style.display    = 'block';
+  document.getElementById('start-btn').textContent = '📷 Rejoin';
+}
+</script>
+</body>
+</html>

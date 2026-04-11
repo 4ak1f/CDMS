@@ -2,18 +2,19 @@ import { useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useWebSocket } from '../hooks/useWebSocket'
 
-export default function WebcamMonitor({ onData }) {
+export default function WebcamMonitor({ onData, onFps }) {
   const videoRef  = useRef(null)
   const canvasRef = useRef(null)
   const resultRef = useRef(null)
   const streamRef = useRef(null)
 
-  const [active, setActive]   = useState(false)
-  const [overlay, setOverlay] = useState(null)
+  const [active,   setActive]  = useState(false)
+  const [overlay,  setOverlay] = useState(null)
+  const [wsError,  setWsError] = useState(null)
 
   const handleMessage = useCallback((data) => {
     setOverlay({ count: data.person_count, risk: data.risk_level })
-    onData(data)
+    if (onData) onData(data)
 
     if (resultRef.current) {
       const img = new Image()
@@ -25,20 +26,27 @@ export default function WebcamMonitor({ onData }) {
     }
   }, [onData])
 
-  const { connected, connect, disconnect } = useWebSocket(handleMessage)
+  const { connect, disconnect } = useWebSocket(handleMessage)
 
   const start = async () => {
+    setWsError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 }
+        video: { width: 640, height: 480, facingMode: 'user' }
       })
       streamRef.current = stream
       videoRef.current.srcObject = stream
       await videoRef.current.play()
       connect(videoRef, canvasRef)
       setActive(true)
-    } catch {
-      alert('Camera permission denied.')
+    } catch(e) {
+      if (e.name === 'NotAllowedError') {
+        setWsError('Camera permission denied. Allow camera access in browser settings.')
+      } else if (e.name === 'NotFoundError') {
+        setWsError('No camera found. Check camera connection.')
+      } else {
+        setWsError(`Camera error: ${e.message}`)
+      }
     }
   }
 
@@ -51,37 +59,30 @@ export default function WebcamMonitor({ onData }) {
     if (ctx) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 640, 480) }
   }
 
-  const riskColor = { SAFE: '#00ff88', WARNING: '#ff9500', DANGER: '#ff3b5c' }
+  const riskColor = { SAFE: 'var(--accent-green)', WARNING: 'var(--accent-amber)', DANGER: 'var(--accent-red)' }
 
   return (
-    <div className="card h-full flex flex-col">
-      <div className="card-header">
-        <span className="card-title">📹 Live Webcam Monitor</span>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${active ? 'bg-safe animate-pulse' : 'bg-slate-600'}`} />
-          <span className="text-xs text-slate-500">{active ? 'Live' : 'Offline'}</span>
+    <div className="glass-card" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span className="card-label" style={{ marginBottom: 0 }}>Live Webcam Monitor</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: active ? 'var(--accent-green)' : 'var(--text-muted)', boxShadow: active ? '0 0 6px var(--accent-green)' : 'none' }} />
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{active ? 'Live' : 'Offline'}</span>
         </div>
       </div>
 
-      <div className="flex-1 p-4 flex flex-col gap-3">
-        {/* Hidden video element for capture */}
-        <video ref={videoRef} className="hidden" muted playsInline />
-        <canvas ref={canvasRef} width="640" height="480" className="hidden" />
+      <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <video ref={videoRef} style={{ display: 'none' }} muted playsInline />
+        <canvas ref={canvasRef} width="640" height="480" style={{ display: 'none' }} />
 
-        {/* Display canvas */}
-        <div className="relative rounded-xl overflow-hidden bg-black flex-1 min-h-[240px]">
-          <canvas
-            ref={resultRef}
-            width="640"
-            height="480"
-            className="w-full h-full object-cover"
-          />
+        <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: '#000', flex: 1, minHeight: 240 }}>
+          <canvas ref={resultRef} width="640" height="480" style={{ width: '100%', borderRadius: 12, display: 'block' }} />
 
           {!active && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-4xl mb-3 opacity-30">📷</div>
-                <div className="text-slate-600 text-sm">Camera inactive</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.3 }}>📷</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Camera inactive</div>
               </div>
             </div>
           )}
@@ -90,41 +91,53 @@ export default function WebcamMonitor({ onData }) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute top-3 right-3 glass rounded-xl p-3 text-xs"
+              style={{
+                position: 'absolute', top: 12, left: 12,
+                padding: '6px 14px', borderRadius: 100,
+                background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                fontSize: 13, fontWeight: 700,
+                color: riskColor[overlay.risk] || 'var(--accent-green)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}
             >
-              <div className="font-bold text-white">People: {overlay.count}</div>
-              <div style={{ color: riskColor[overlay.risk] }} className="font-bold">
-                {overlay.risk}
-              </div>
+              <span>{overlay.count} people</span>
+              <span style={{ opacity: 0.6, fontWeight: 400, fontSize: 11 }}>|</span>
+              <span>{overlay.risk}</span>
             </motion.div>
           )}
 
           {active && (
-            <div className="absolute top-3 left-3">
-              <div className="flex items-center gap-1.5 bg-danger/20 border border-danger/40 rounded-full px-2 py-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
-                <span className="text-danger text-[10px] font-bold">REC</span>
+            <div style={{ position: 'absolute', top: 12, left: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,59,92,0.15)', border: '1px solid rgba(255,59,92,0.3)', borderRadius: 100, padding: '4px 10px' }}>
+                <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-red)' }} />
+                <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--accent-red)', letterSpacing: 1 }}>REC</span>
               </div>
             </div>
           )}
         </div>
 
-        <div className="flex gap-2">
+        {wsError && (
+          <div style={{ padding: '10px 14px', borderRadius: 10,
+            background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.2)',
+            fontSize: 12, color: 'var(--accent-red)' }}>
+            {wsError}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10 }}>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={start}
-            disabled={active}
-            className="flex-1 btn-primary py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            onClick={start} disabled={active}
+            style={{ flex: 1, padding: '10px', borderRadius: 12, background: 'var(--accent-cyan)', color: '#000', fontWeight: 700, fontSize: 13, border: 'none', cursor: active ? 'not-allowed' : 'pointer', opacity: active ? 0.4 : 1 }}
           >
             ▶ Start Camera
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={stop}
-            disabled={!active}
-            className="flex-1 bg-danger/20 border border-danger/30 text-danger py-2.5 rounded-xl text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-danger/30 transition-colors"
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            onClick={stop} disabled={!active}
+            style={{ flex: 1, padding: '10px', borderRadius: 12, background: 'rgba(255,59,92,0.12)', border: '1px solid rgba(255,59,92,0.3)', color: 'var(--accent-red)', fontWeight: 700, fontSize: 13, cursor: !active ? 'not-allowed' : 'pointer', opacity: !active ? 0.4 : 1 }}
           >
             ⏹ Stop
           </motion.button>

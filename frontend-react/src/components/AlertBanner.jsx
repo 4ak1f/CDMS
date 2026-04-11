@@ -16,25 +16,25 @@ export default function AlertBanner({ alert, onDismiss }) {
           animate={{ x: 0,   opacity: 1 }}
           exit={{   x: 400, opacity: 0 }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed top-20 right-6 z-50 max-w-sm"
+          style={{ position: 'fixed', top: 80, right: 24, zIndex: 9999, maxWidth: 360 }}
         >
-          <div className="glass rounded-2xl p-5 border border-danger/40 glow-danger">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl animate-bounce">🚨</div>
-              <div>
-                <div className="text-danger font-bold text-sm mb-1">
+          <div className="glass-card" style={{ padding: 20, border: '1px solid rgba(255,59,92,0.4)', boxShadow: '0 0 30px rgba(255,59,92,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <div style={{ fontSize: 24, animation: 'bounce 1s infinite' }}>🚨</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ color: 'var(--accent-red)', fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
                   DANGER ALERT TRIGGERED
                 </div>
-                <div className="text-slate-400 text-xs leading-relaxed">
+                <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>
                   {alert.message}
                 </div>
-                <div className="text-slate-500 text-xs mt-2">
+                <div style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 8 }}>
                   PDF report auto-generated • Email sent
                 </div>
               </div>
               <button
                 onClick={onDismiss}
-                className="text-slate-500 hover:text-white ml-auto text-lg leading-none"
+                style={{ color: 'var(--text-muted)', background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 0 }}
               >×</button>
             </div>
           </div>

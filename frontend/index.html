@@ -308,6 +308,26 @@
       padding-bottom: 2px;
     }
 
+    /* ── Sidebar scrollspy active state (Fix 4) ── */
+    .sidebar-nav-item.active {
+      background: rgba(37, 99, 235, 0.1) !important;
+      color: #2563eb !important;
+      font-weight: 600;
+    }
+    .sidebar-nav-item.active .material-symbols-outlined {
+      color: #2563eb !important;
+    }
+    .sidebar-nav-item {
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    /* ── Top nav tab active state (Fix 5) ── */
+    .active-tab {
+      border-bottom: 2px solid #2563eb;
+      color: #2563eb !important;
+      font-weight: 600;
+    }
+
     /* ── Notification dropdown ── */
     #notifDropdown {
       position: absolute;
@@ -320,6 +340,20 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       z-index: 9999;
       display: none;
+    }
+
+    /* ── Feedback widget slide-up animation ── */
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ── Scrollspy active state (Fix 6) ── */
+    nav a.active, .sidebar a.active, [class*="nav"] a.active {
+      background: rgba(99,102,241,0.15);
+      color: #6366f1;
+      font-weight: 600;
+      border-left: 3px solid #6366f1;
     }
 
     /* ── Smooth transitions ── */
@@ -398,12 +432,12 @@
   <header class="sticky top-0 z-40 flex justify-between items-center w-full px-6 h-14 border-b border-outline-variant/15 shrink-0" style="background:rgba(248,249,252,0.85);backdrop-filter:blur(12px);box-shadow:0 1px 3px rgba(0,0,0,0.05);">
     <div class="flex items-center gap-8">
       <!-- Branding -->
-      <div class="flex items-center gap-2.5">
+      <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="cursor:pointer;text-decoration:none;" class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background:#2563eb;">
           <span class="material-symbols-outlined text-white" style="font-size:16px;">shield</span>
         </div>
         <h1 class="text-base font-bold tracking-tighter text-on-surface">CDMS Core</h1>
-      </div>
+      </a>
       <!-- Top nav -->
       <nav class="hidden lg:flex gap-5" id="topNav">
         <a class="topnav-link topnav-active font-medium text-sm tracking-tight cursor-pointer" onclick="switchView('dashboard')">Dashboard</a>
@@ -425,7 +459,7 @@
       </div>
       <!-- MAE badge -->
       <div class="px-3 py-1.5 rounded-lg border border-outline-variant/20" style="background:#dbe1ff;">
-        <span class="font-mono text-[10px] font-bold" style="color:#00174b;">MAE 19.64</span>
+        <span id="maeDisplay" class="font-mono text-[10px] font-bold" style="color:#00174b;">MAE 19.64</span>
       </div>
       <!-- Icon buttons -->
       <div class="relative" id="notifWrapper">
@@ -669,7 +703,7 @@
         </div>
 
         <!-- Feedback Widget (shown by analyzeImage after result) -->
-        <div id="feedbackWidget" style="display:none;margin-top:14px;padding:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;">
+        <div id="feedbackWidget" style="display:none; position:fixed; bottom:80px; right:24px; width:300px; padding:18px; background:#ffffff; border:1px solid #6366f1; border-radius:14px; box-shadow:0 8px 32px rgba(99,102,241,0.2); z-index:9998; animation: slideUp 0.3s ease;">
           <div style="font-size:0.8rem;font-weight:700;color:#1d4ed8;margin-bottom:4px;">🎯 Help improve the model</div>
           <div style="font-size:0.74rem;color:#64748b;margin-bottom:10px;">
             System estimated <strong id="predictedDisplay">0</strong> people. How many were actually there?
@@ -964,19 +998,19 @@
 <!-- ════════════════════════════════════════════
      FLOATING THRESHOLD PRESET PANEL
 ════════════════════════════════════════════ -->
-<div class="fixed bottom-6 hidden lg:block z-30" style="left:17rem;max-width:210px;">
+<div id="quickPresetPanel" class="fixed bottom-6 hidden lg:block z-30" style="left:17rem;max-width:210px;">
   <div class="glass-panel p-4 rounded-xl border border-outline-variant/20 shadow-xl">
     <div class="flex items-center gap-2 mb-3">
       <span class="material-symbols-outlined" style="color:#2563eb;font-size:18px;">tune</span>
       <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface">Quick Presets</span>
     </div>
     <div class="grid grid-cols-2 gap-1.5">
-      <button onclick="applyPreset('library')"   class="px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">📚 Library</button>
-      <button onclick="applyPreset('street')"    class="px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🏙 Street</button>
-      <button onclick="applyPreset('concert')"   class="px-2 py-2 text-white text-[10px] font-bold rounded-lg shadow-sm" style="background:#2563eb;">🎵 Concert</button>
-      <button onclick="applyPreset('stadium')"   class="px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🏟 Stadium</button>
-      <button onclick="applyPreset('station')"   class="px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🚉 Station</button>
-      <button onclick="applyPreset('religious')" class="px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🕌 Religious</button>
+      <button onclick="applyPreset('library')"   class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">📚 Library</button>
+      <button onclick="applyPreset('street')"    class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🏙 Street</button>
+      <button onclick="applyPreset('concert')"   class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🎵 Concert</button>
+      <button onclick="applyPreset('stadium')"   class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🏟 Stadium</button>
+      <button onclick="applyPreset('station')"   class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🚉 Station</button>
+      <button onclick="applyPreset('religious')" class="preset-btn px-2 py-2 bg-surface-container text-[10px] font-bold rounded-lg border border-outline-variant/15 hover:bg-surface-container-high transition-colors">🕌 Religious</button>
     </div>
   </div>
 </div>
@@ -1143,6 +1177,18 @@
      JAVASCRIPT — ALL FUNCTIONS PRESERVED VERBATIM
 ════════════════════════════════════════════ -->
 <script>
+  // ── Toast notification system ─────────────────────────
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  if (!c) return;
+  const t = document.createElement('div');
+  const colors = { success: '#22c55e', error: '#ef4444', info: '#3b82f6', warning: '#f59e0b' };
+  t.style.cssText = `padding:12px 20px;border-radius:8px;font-size:14px;font-weight:500;background:#1e293b;color:#f8fafc;box-shadow:0 4px 20px rgba(0,0,0,0.4);border-left:3px solid ${colors[type]||colors.info};pointer-events:auto;transition:opacity 0.3s;white-space:nowrap;`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
   // ── Presets ──────────────────────────────────────────
 const PRESETS = {
   library:   { warning: 20,   danger: 40,   label: 'Library'   },
@@ -1154,6 +1200,20 @@ const PRESETS = {
 }
 
 async function applyPreset(type) {
+  // Clear all preset button highlights
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.style.background = '';
+    b.style.color = '';
+    b.classList.remove('text-white');
+    b.classList.add('bg-surface-container');
+  });
+  // Highlight selected
+  const activeBtn = document.querySelector(`[onclick="applyPreset('${type}')"]`);
+  if (activeBtn) {
+    activeBtn.style.background = '#2563eb';
+    activeBtn.style.color = 'white';
+    activeBtn.classList.remove('bg-surface-container');
+  }
   const p = PRESETS[type]
   if (!p) return
   document.getElementById('warningThreshold').value = p.warning
@@ -1368,13 +1428,15 @@ async function submitFeedback() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        predicted_count: lastPredictedCount,
-        actual_count:    actual,
-        scene_type:      sceneType
+        predicted_count:   lastPredictedCount,
+        actual_count:      actual,
+        scene_type:        sceneType,
+        scene_fingerprint: window.lastSceneFingerprint || 'unknown'
       })
     })
     document.getElementById('feedbackMsg').style.display = 'block'
     document.getElementById('actualCount').value = ''
+    showToast('Feedback submitted — thank you!', 'success');
     setTimeout(() => {
       document.getElementById('feedbackMsg').style.display  = 'none'
       document.getElementById('feedbackWidget').style.display = 'none'
@@ -1514,7 +1576,7 @@ async function startWebcam() {
       img.src = 'data:image/jpeg;base64,' + data.frame;
 
       // Update UI
-      document.getElementById('overlayCount').textContent = `People: ${data.person_count} (${data.confidence_min}-${data.confidence_max})`;
+      document.getElementById('overlayCount').textContent = `People: ${data.person_count}`;
       document.getElementById('overlayRisk').textContent  = `Risk: ${data.risk_level}`;
       updateRiskDisplay(data.person_count, data.risk_level, data.message);
       updateSession(data.person_count, data.risk_level)
@@ -1539,6 +1601,9 @@ async function startWebcam() {
       if (riskHistory.length > 20) riskHistory.shift();
       updateSparkline();
       updateRiskTimeline();
+      if (data.scene_fingerprint) {
+        window.lastSceneFingerprint = data.scene_fingerprint;
+      }
     };
 
     websocket.onerror = () => {
@@ -1594,6 +1659,7 @@ async function analyzeImage() {
   document.getElementById('imgSpinner').style.display = 'block';
   document.getElementById('imgResult').style.display = 'none';
   document.getElementById('imgBtn').disabled = true;
+  document.getElementById('feedbackWidget').style.display = 'none';
 
   const formData = new FormData();
   formData.append('file', imageFile);
@@ -1605,7 +1671,7 @@ async function analyzeImage() {
     const risk = data.risk_level;
     document.getElementById('imgRisk').textContent    = risk;
     document.getElementById('imgMsg').textContent     = data.message;
-    document.getElementById('imgCount').textContent   = `${data.person_count} (±${Math.round((data.confidence_max - data.confidence_min)/2)})`;
+    document.getElementById('imgCount').textContent   = data.person_count;
     document.getElementById('imgDensity').textContent = data.density_score;
 
     const box = document.getElementById('imgResult');
@@ -1622,15 +1688,19 @@ async function analyzeImage() {
     }
     updateRiskDisplay(data.person_count, risk, data.message);
     if (data.zones) updateZones(data.zones);
+    lastPredictedCount = data.person_count;
+    window.lastSceneFingerprint = data.scene_fingerprint || 'unknown';
+    document.getElementById('predictedDisplay').textContent = data.person_count;
+    document.getElementById('feedbackWidget').style.display = 'block';
+    document.getElementById('feedbackWidget').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     loadStats();
   } catch(e) {
-    alert('Error analyzing image.');
+    console.error('Image analysis error:', e);
+    showToast('Analysis failed. Please try again.', 'error');
+  } finally {
+    document.getElementById('imgSpinner').style.display = 'none';
+    document.getElementById('imgBtn').disabled = false;
   }
-  lastPredictedCount = data.person_count
-  document.getElementById('predictedDisplay').textContent = data.person_count
-  document.getElementById('feedbackWidget').style.display = 'block'
-  document.getElementById('imgSpinner').style.display = 'none';
-  document.getElementById('imgBtn').disabled = false;
 }
 
 // ── Video Analysis ──
@@ -1664,13 +1734,18 @@ async function analyzeVideo() {
     box.style.display = 'block';
 
     updateRiskDisplay(data.max_person_count, risk, `Video analyzed: ${data.frames_analyzed} frames`);
+    lastPredictedCount = data.max_person_count;
+    document.getElementById('predictedDisplay').textContent = data.max_person_count;
+    document.getElementById('feedbackWidget').style.display = 'block';
+    document.getElementById('feedbackWidget').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     loadStats();
   } catch(e) {
-    alert('Error analyzing video.');
+    console.error('Video analysis error:', e);
+    showToast('Video analysis failed. Please try again.', 'error');
+  } finally {
+    document.getElementById('vidSpinner').style.display = 'none';
+    document.getElementById('vidBtn').disabled = false;
   }
-
-  document.getElementById('vidSpinner').style.display = 'none';
-  document.getElementById('vidBtn').disabled = false;
 }
 
 // ── Stats + Chart ──
@@ -1869,14 +1944,16 @@ let _analyticsChart = null;
 function switchView(view) {
   // Update top nav active state
   document.querySelectorAll('.topnav-link').forEach(a => {
-    a.classList.remove('topnav-active');
+    a.classList.remove('topnav-active', 'active-tab');
     a.style.color = '';
     a.style.borderBottom = '';
     a.style.paddingBottom = '';
   });
   const viewIdx = { dashboard:0, analytics:1, assets:2, sectors:3 };
   const links = document.querySelectorAll('.topnav-link');
-  if (links[viewIdx[view]]) links[viewIdx[view]].classList.add('topnav-active');
+  if (links[viewIdx[view]]) {
+    links[viewIdx[view]].classList.add('topnav-active', 'active-tab');
+  }
 
   // Hide all special views first
   document.getElementById('view-analytics').style.display = 'none';
@@ -2094,6 +2171,15 @@ function updateRiskTimeline() {
   ).join('');
 }
 
+function formatUptime(seconds) {
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
 async function updateSystemStats() {
   try {
     const r = await fetch('/system/stats');
@@ -2104,11 +2190,7 @@ async function updateSystemStats() {
     const mem = document.getElementById('memUsage');
     if (mem) mem.textContent = d.memory_percent + '%';
     const upt = document.getElementById('sysUptime');
-    if (upt) {
-      const s = d.uptime_seconds;
-      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-      upt.textContent = `${h}h ${m}m`;
-    }
+    if (upt) upt.textContent = formatUptime(d.uptime_seconds);
   } catch(e) {}
 }
 
@@ -2130,6 +2212,15 @@ updateSystemStats();
 setInterval(updateAlertFreq, 30000);
 updateAlertFreq();
 
+// Load real model MAE from backend
+fetch('/system/stats')
+  .then(r => r.json())
+  .then(d => {
+    const maeEl = document.getElementById('maeDisplay');
+    if (maeEl && d.model_mae) maeEl.textContent = 'MAE ' + d.model_mae;
+  })
+  .catch(() => {});
+
 // ── Extra: SVG gauge arc update (supplements updateRiskDisplay) ──
 const _origUpdateRiskDisplay = updateRiskDisplay;
 updateRiskDisplay = function(count, risk, message) {
@@ -2144,6 +2235,102 @@ updateRiskDisplay = function(count, risk, message) {
                    : risk === 'WARNING' ? '#d97706'
                    : '#16a34a';
 };
+
+// ── ESC key: close feedback widget and any open modals (Fix 9) ──
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  document.getElementById('feedbackWidget')?.style.setProperty('display', 'none');
+  document.querySelectorAll('[id$="Modal"],[id$="-modal"],[class*="modal"]').forEach(m => {
+    if (m.style.display !== 'none') m.style.display = 'none';
+  });
+});
+
 </script>
+
+<!-- Toast container (Fix 7) -->
+<div id="toast-container" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:99999;pointer-events:none;"></div>
+
+<!-- Scrollspy + page title observer (Fix 6 & Fix 8) -->
+<script>
+(function initScrollspy() {
+  // Map section IDs to sidebar items by their onclick attribute
+  const sidebarItems = document.querySelectorAll('.sidebar-nav-item');
+  const sections = document.querySelectorAll(
+    'section[id], [id$="Panel"], [id$="Section"], [id$="-section"], ' +
+    '#section-stats, #section-liveview, #secondary-row, #section-thresholds, #section-tables'
+  );
+  if (!sections.length) return;
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const sectionId = entry.target.id.toLowerCase();
+      sidebarItems.forEach(item => {
+        const onclick = (item.getAttribute('onclick') || '').toLowerCase();
+        const text = item.textContent.toLowerCase().trim().replace(/\s+/g, '');
+        const matches = onclick.includes(sectionId) ||
+                        sectionId.includes(text.replace(/panel|section/g, '').trim()) ||
+                        text.includes(sectionId.replace(/panel|section/g, '').trim());
+        item.classList.toggle('active', matches);
+        if (matches) {
+          item.style.background = 'rgba(99,102,241,0.12)';
+          item.style.color = 'var(--primary, #4f46e5)';
+        } else if (!item.classList.contains('sidebar-active')) {
+          item.style.background = '';
+          item.style.color = '';
+        }
+      });
+    });
+  }, { rootMargin: '-10% 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => io.observe(s));
+})();
+
+// Page title updates on navigation (Fix 8)
+const _sectionTitles = {};
+document.querySelectorAll('nav a[href^="#"], .sidebar a[href^="#"]').forEach(a => {
+  const id = a.getAttribute('href').slice(1);
+  if (id) _sectionTitles[id] = a.textContent.trim();
+});
+const _titleObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting && _sectionTitles[e.target.id]) document.title = `CDMS — ${_sectionTitles[e.target.id]}`; });
+}, { threshold: 0.4 });
+Object.keys(_sectionTitles).forEach(id => { const el = document.getElementById(id); if (el) _titleObserver.observe(el); });
+
+// Quick preset panel visibility (Fix 1c)
+function updatePresetVisibility() {
+  const presetPanel = document.getElementById('quickPresetPanel');
+  if (!presetPanel) return;
+  const scrolled = window.scrollY || document.documentElement.scrollTop;
+  if (scrolled > 120) {
+    presetPanel.classList.remove('hidden');
+    presetPanel.style.display = '';
+  } else {
+    presetPanel.classList.add('hidden');
+    presetPanel.style.display = 'none';
+  }
+}
+window.addEventListener('scroll', updatePresetVisibility, { passive: true });
+// Also listen on the inner scroll area (panels scroll inside mainScrollArea)
+(function() {
+  const scrollArea = document.getElementById('mainScrollArea');
+  if (scrollArea) {
+    scrollArea.addEventListener('scroll', function() {
+      const presetPanel = document.getElementById('quickPresetPanel');
+      if (!presetPanel) return;
+      const scrolled = scrollArea.scrollTop;
+      if (scrolled > 120) {
+        presetPanel.classList.remove('hidden');
+        presetPanel.style.display = '';
+      } else {
+        presetPanel.classList.add('hidden');
+        presetPanel.style.display = 'none';
+      }
+    }, { passive: true });
+  }
+})();
+updatePresetVisibility();
+</script>
+
 </body>
 </html>

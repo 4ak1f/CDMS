@@ -6,7 +6,9 @@ export function useWebSocket(onMessage) {
   const intervalRef = useRef(null)
 
   const connect = useCallback((videoRef, canvasRef) => {
-    ws.current = new WebSocket('ws://localhost:8000/ws/webcam')
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${wsProtocol}//${window.location.host}/ws`
+    ws.current = new WebSocket(wsUrl)
 
     ws.current.onopen = () => {
       setConnected(true)
@@ -19,7 +21,7 @@ export function useWebSocket(onMessage) {
           .toDataURL('image/jpeg', 0.7)
           .split(',')[1]
         ws.current.send(JSON.stringify({ frame }))
-      }, 500)
+      }, 1000)
     }
 
     ws.current.onmessage = (e) => {
@@ -32,7 +34,8 @@ export function useWebSocket(onMessage) {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
 
-    ws.current.onerror = () => {
+    ws.current.onerror = (e) => {
+      console.error('WebSocket error:', e)
       setConnected(false)
     }
   }, [onMessage])

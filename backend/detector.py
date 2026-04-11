@@ -4,11 +4,11 @@ import numpy as np
 
 # YOLOv8 nano segmentation model
 model = YOLO("yolov8n-seg.pt")
-model.overrides['iou']  = 0.4
-model.overrides['conf'] = 0.25
+model.overrides['iou']  = 0.3
+model.overrides['conf'] = 0.30
 
 
-def detect_people(frame):
+def detect_people(frame, conf_override=None, iou_override=None):
     """
     Detects people using YOLOv8 segmentation.
     - Draws outlines (masks) for sparse crowds
@@ -22,10 +22,14 @@ def detect_people(frame):
     annotated_frame = frame.copy()
 
     # Adaptive confidence based on frame size
-    min_conf = 0.25 if frame_area > 500000 else 0.35
+    min_conf = 0.20
+
+    # Use scene-learned overrides if provided, else fall back to defaults
+    iou_t  = iou_override  if iou_override  is not None else 0.30
+    conf_t = conf_override if conf_override is not None else 0.30
 
     # Run detection at original size
-    all_results = model(frame, classes=[0], verbose=False)
+    all_results = model(frame, classes=[0], verbose=False, iou=iou_t, conf=conf_t, agnostic_nms=True)
 
     # Also run on upper half for standing people
     upper         = frame[:h//2, :]
@@ -43,7 +47,7 @@ def detect_people(frame):
             box_ratio = box_area / frame_area
 
             # Filter out tiny detections (phone screens, photos)
-            if confidence < min_conf or box_ratio < 0.005:
+            if confidence < min_conf or box_ratio < 0.001:
                 continue
 
             detections.append({

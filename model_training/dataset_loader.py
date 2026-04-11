@@ -233,6 +233,149 @@ class JHUCrowdDataset(Dataset):
         density_tensor = torch.tensor(density_map_resized, dtype=torch.float32).unsqueeze(0)
 
         return image_tensor, density_tensor, len(points)
+def download_mall_dataset(target_dir):
+    """
+    Downloads the Mall dataset if not already present.
+    Falls back to manual instructions if automatic download fails.
+    """
+    import urllib.request
+    import zipfile
+
+    frames_dir = os.path.join(target_dir, "frames")
+    gt_file    = os.path.join(target_dir, "mall_gt.mat")
+
+    if os.path.exists(frames_dir) and os.path.exists(gt_file):
+        print("✅ Mall dataset already present — skipping download")
+        return
+
+    os.makedirs(target_dir, exist_ok=True)
+
+    # Primary mirror (Kaggle-hosted ZIP)
+    url = "https://personal.ie.cuhk.edu.hk/~ccloy/files/datasets/mall_dataset.zip"
+    zip_path = os.path.join(target_dir, "mall_dataset.zip")
+
+    print(f"📥 Downloading Mall dataset from {url} ...")
+    try:
+        urllib.request.urlretrieve(url, zip_path)
+        print("✅ Download complete — extracting...")
+        with zipfile.ZipFile(zip_path, "r") as z:
+            z.extractall(target_dir)
+        os.remove(zip_path)
+        print(f"✅ Mall dataset extracted to {target_dir}")
+    except Exception as e:
+        print(f"⚠️  Automatic download failed: {e}")
+        print("    Please download the Mall dataset manually from:")
+        print("    https://personal.ie.cuhk.edu.hk/~ccloy/downloads_mall_dataset.html")
+        print(f"    and extract it to: {target_dir}")
+        print("    Expected layout:")
+        print(f"      {target_dir}/frames/seq_000001.jpg ... seq_002000.jpg")
+        print(f"      {target_dir}/mall_gt.mat")
+        raise
+
+
+class MallDataset(Dataset):
+    """
+    PyTorch Dataset for the Mall Crowd Counting dataset.
+
+    2000 surveillance frames from a shopping mall lobby.
+    Crowd counts range from 13 to 53 people per frame.
+
+    Ground truth: mall_gt.mat
+      frame[0, i]['loc'][0, 0]   → (N, 2) array of (x, y) head positions
+      frame[0, i]['count'][0, 0] → scalar count (redundant; we derive from loc)
+    Images: frames/seq_XXXXXX.jpg  (1-indexed, zero-padded to 6 digits)
+    """
+
+    def __init__(self, data_path, split="train", image_size=(512, 512),
+                 train_ratio=0.8):
+        self.image_size = image_size
+        self.samples    = []
+
+        gt_path = os.path.join(data_path, "mall_gt.mat")
+        if not os.path.exists(gt_path):
+            raise FileNotFoundError(
+                f"Mall GT not found at {gt_path}. "
+                "Run download_mall_dataset() first."
+            )
+
+        gt_data = sio.loadmat(gt_path)
+        frames_cell = gt_data["frame"]          # shape (1, 2000)
+        n_total     = frames_cell.shape[1]
+
+        split_idx = int(n_total * train_ratio)
+        indices   = range(0, split_idx) if split == "train" else range(split_idx, n_total)
+
+        for i in indices:
+            img_path = os.path.join(data_path, "frames", f"seq_{i+1:06d}.jpg")
+            if not os.path.exists(img_path):
+                continue
+            # Extract (N, 2) head-location array for this frame
+            loc = frames_cell[0, i][0, 0][0]   # 'loc' is first structured field
+            self.samples.append((img_path, loc))
+
+        print(f"✅ MallDataset [{split}]: {len(self.samples)} frames loaded")
+
+        self.transform = transforms.Compose([
+            transforms.Resize(image_size),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path, loc = self.samples[idx]
+
+        image          = Image.open(img_path).convert("RGB")
+        orig_w, orig_h = image.size
+
+        # loc may be (N, 2) or (2,) for single-person frames
+        points = np.array(loc, dtype=np.float32)
+        if points.ndim == 1:
+            points = points.reshape(1, -1)
+
+        density_map = generate_density_map((orig_h, orig_w), points, sigma=8)
+
+        target_h = self.image_size[0] // 8
+        target_w = self.image_size[1] // 8
+        density_map_resized = scipy.ndimage.zoom(
+            density_map,
+            (target_h / orig_h, target_w / orig_w),
+            order=1
+        )
+
+        if density_map_resized.sum() > 0 and len(points) > 0:
+            density_map_resized = density_map_resized * (
+                len(points) / density_map_resized.sum()
+            )
+
+        image_tensor   = self.transform(image)
+        density_tensor = torch.tensor(
+            density_map_resized, dtype=torch.float32
+        ).unsqueeze(0)
+
+        return image_tensor, density_tensor, len(points)
+
+
+def get_finetune_dataloaders(mall_path, batch_size=4, image_size=(512, 512)):
+    """
+    Returns train and val DataLoaders for Mall fine-tuning.
+    80 % of the 2000 frames for training, 20 % for validation.
+    """
+    train_ds = MallDataset(mall_path, split="train", image_size=image_size)
+    val_ds   = MallDataset(mall_path, split="val",   image_size=image_size)
+
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True,  num_workers=0)
+    val_loader   = DataLoader(val_ds,   batch_size=1,          shuffle=False, num_workers=0)
+
+    print(f"📂 Mall fine-tune — train: {len(train_ds)}, val: {len(val_ds)}")
+    return train_loader, val_loader
+
+
 def get_all_dataloaders(shanghai_path, jhu_path, batch_size=4, image_size=(512, 512)):
     """
     Combines ALL datasets:

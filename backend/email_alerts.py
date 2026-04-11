@@ -103,7 +103,7 @@ def send_danger_alert(person_count, density_score, risk_level, message, report_p
         </html>
         """
 
-        msg.attach(MIMEText(html_body, 'html'))
+        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
         # Attach PDF report if provided
         if report_path and os.path.exists(report_path):

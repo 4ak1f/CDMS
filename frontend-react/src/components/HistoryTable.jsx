@@ -2,22 +2,20 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { api } from '../utils/api'
 
-const BADGE = {
-  SAFE:    'bg-safe/10    text-safe    border border-safe/20',
-  WARNING: 'bg-warning/10 text-warning border border-warning/20',
-  DANGER:  'bg-danger/10  text-danger  border border-danger/20',
+const BADGE_COLOR = {
+  SAFE:    'var(--accent-green)',
+  WARNING: 'var(--accent-amber)',
+  DANGER:  'var(--accent-red)',
 }
 
 export default function HistoryTable() {
-  const [history,  setHistory]  = useState([])
-  const [reports,  setReports]  = useState([])
+  const [history,    setHistory]    = useState([])
   const [generating, setGenerating] = useState(false)
 
   const load = async () => {
     try {
-      const [hist, reps] = await Promise.all([api.getHistory(), api.getReports()])
-      setHistory(hist)
-      setReports(reps.reports || [])
+      const hist = await api.getHistory()
+      setHistory(Array.isArray(hist) ? hist : [])
     } catch {}
   }
 
@@ -26,60 +24,40 @@ export default function HistoryTable() {
   const generateReport = async () => {
     setGenerating(true)
     try {
-      await api.generateReport()
+      await fetch('/reports/generate', { method: 'POST' })
       await load()
     } catch {}
     setGenerating(false)
   }
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <span className="card-title">📋 Detection History</span>
-        <div className="flex items-center gap-2">
+    <div className="glass-card">
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span className="card-label" style={{ marginBottom: 0 }}>Detection History</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={generateReport}
-            disabled={generating}
-            className="text-xs bg-accent/10 text-accent border border-accent/20 rounded-lg px-3 py-1.5 hover:bg-accent/20 transition-colors disabled:opacity-40"
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            onClick={generateReport} disabled={generating}
+            style={{ fontSize: 11, background: 'rgba(99,102,241,0.1)', color: 'var(--accent-purple)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: 8, padding: '5px 12px', cursor: generating ? 'not-allowed' : 'pointer', opacity: generating ? 0.4 : 1 }}
           >
             {generating ? '⏳ Generating...' : '📄 Generate Report'}
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
             onClick={load}
-            className="text-xs text-slate-500 hover:text-accent border border-border rounded-lg px-3 py-1.5 transition-colors"
+            style={{ fontSize: 11, color: 'var(--text-muted)', border: '1px solid var(--border-glass)', borderRadius: 8, padding: '5px 12px', background: 'var(--bg-glass)', cursor: 'pointer' }}
           >
             ↻ Refresh
           </motion.button>
         </div>
       </div>
 
-      {reports.length > 0 && (
-  <div className="px-5 py-3 border-b border-border bg-accent/3">
-    <div className="text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wider">📁 Generated Reports</div>
-    <div className="flex flex-wrap gap-2">
-      {reports.map(r => (
-        <a>
-          key={r}
-          href={`/reports/download/${r}`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs bg-surface border border-border rounded-lg px-3 py-1.5 text-accent hover:border-accent/40 transition-colors"
-          📄 {r}
-        </a>
-      ))}
-    </div>
-  </div>
-)}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr className="border-b border-border">
+            <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
               {['Timestamp', 'People', 'Density', 'Risk Level', 'Message'].map(h => (
-                <th key={h} className="text-left px-5 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wider">
+                <th key={h} style={{ textAlign: 'left', padding: '10px 20px', color: 'var(--text-muted)', fontWeight: 600, fontSize: 10, textTransform: 'uppercase', letterSpacing: '1.5px' }}>
                   {h}
                 </th>
               ))}
@@ -88,29 +66,32 @@ export default function HistoryTable() {
           <tbody>
             {history.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center py-12 text-slate-600">
+                <td colSpan="5" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)', fontSize: 13 }}>
                   No detections yet — run an analysis to see results
                 </td>
               </tr>
-            ) : history.map((row, i) => (
-              <motion.tr
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x:  0  }}
-                transition={{ delay: i * 0.03 }}
-                className="border-b border-border/50 hover:bg-white/2 transition-colors"
-              >
-                <td className="px-5 py-3 text-slate-500 font-mono text-xs">{row.timestamp}</td>
-                <td className="px-5 py-3 font-bold text-white">{row.person_count}</td>
-                <td className="px-5 py-3 text-slate-400">{row.density_score}</td>
-                <td className="px-5 py-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${BADGE[row.risk_level]}`}>
-                    {row.risk_level}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-slate-500 text-xs">{row.message}</td>
-              </motion.tr>
-            ))}
+            ) : history.map((row, i) => {
+              const color = BADGE_COLOR[row.risk_level] || 'var(--text-muted)'
+              return (
+                <motion.tr
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  style={{ borderBottom: '1px solid var(--border-glass)' }}
+                >
+                  <td style={{ padding: '10px 20px', color: 'var(--text-muted)', fontFamily: 'monospace', fontSize: 11 }}>{row.timestamp}</td>
+                  <td style={{ padding: '10px 20px', fontWeight: 700, color: 'var(--text-primary)' }}>{row.person_count}</td>
+                  <td style={{ padding: '10px 20px', color: 'var(--text-secondary)' }}>{row.density_score}</td>
+                  <td style={{ padding: '10px 20px' }}>
+                    <span style={{ padding: '3px 10px', borderRadius: 100, background: color + '22', color, fontSize: 10, fontWeight: 700 }}>
+                      {row.risk_level}
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px 20px', color: 'var(--text-muted)', fontSize: 11 }}>{row.message}</td>
+                </motion.tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

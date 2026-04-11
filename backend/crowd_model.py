@@ -96,12 +96,17 @@ def generate_density_map(model, device, frame):
 
     # Calculate edge density ONCE before the loop
     import backend.calibration as cal
-    scale, scene_type, edge_density, texture_score = cal.get_smart_scale(frame)
+    scene_p = cal.get_full_scene_params(frame)
+    scene_type        = scene_p["scene_type"]
+    edge_density      = scene_p["edge_density"]
+    texture_score     = scene_p["texture_score"]
+    scene_fingerprint = scene_p["fingerprint"]
     if cal.BENCHMARK_MODE:
         scale = 1.0
     else:
-        scale = min(scale, 1.2)
-    print(f"🎬 Scene: {scene_type} | Scale: {scale} | Edge: {edge_density:.3f}")
+        scale = scene_p["scale"]  # no floor/ceiling clamp — trust the learned value
+        scale = max(0.2, min(12.0, scale))  # only safety bounds
+    print(f"🎬 Scene: {scene_type} | Scale: {scale:.2f} | Edge: {edge_density:.3f} | Source: {scene_p['source']}")
 
     counts = []
     density_maps = []
@@ -130,7 +135,7 @@ def generate_density_map(model, device, frame):
     conf_max  = avg_count + std_count
         # Run 3 evaluations and average for stability
     all_counts = counts.copy()
-    for _ in range(2):  # 2 more runs = 3 total
+    for _ in range(0):  # disabled — single pass is more accurate for calibrated model
         extra_counts = []
         for size in [(512, 512), (640, 640), (384, 384)]:
             t = transforms.Compose([
@@ -155,7 +160,18 @@ def generate_density_map(model, device, frame):
     std_count = float(np.std(all_counts))
     conf_min  = max(0, avg_count - std_count)
     conf_max  = avg_count + std_count
-    return density_maps[0], avg_count, (round(conf_min), round(conf_max))
+
+    # Sanity cap: no image can have more people than physically possible
+    # A 640x480 image can show max ~2000 people even in extremely dense crowds
+    # Cap based on scale to prevent runaway multiplication
+    if scale <= 1.0:
+        avg_count = min(avg_count, 500)
+    elif scale <= 2.0:
+        avg_count = min(avg_count, 1000)
+    else:
+        avg_count = min(avg_count, 2000)
+
+    return density_maps[0], avg_count, (round(conf_min), round(conf_max)), scene_fingerprint
 
 
 def generate_heatmap(density_map, frame_shape):
@@ -203,7 +219,7 @@ def analyze_zones(density_map, frame_shape, grid_rows=3, grid_cols=3):
             ]
             zone_count = max(0.0, float(cell.sum()))
             # Cap zone count to prevent unrealistic values
-            zone_count = min(zone_count, 10000.0)
+            zone_count = min(zone_count, 999.0)
             cell_area    = cell_h * cell_w
             zone_density = (zone_count / cell_area) * 10000
 
@@ -250,11 +266,6 @@ def draw_zones(frame, zones):
         cv2.rectangle(overlay, (x1, y1), (x2, y2), color, -1)
         cv2.addWeighted(overlay, 0.15, annotated, 0.85, 0, annotated)
 
-        label       = f"{zone['zone']}: {zone['risk']}"
-        count_label = f"~{zone['count']:.0f} people"
-        cv2.putText(annotated, label, (x1 + 5, y1 + 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
-        cv2.putText(annotated, count_label, (x1 + 5, y1 + 38),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+        # Text labels removed — frontend Zone Monitor shows this info
 
     return annotated

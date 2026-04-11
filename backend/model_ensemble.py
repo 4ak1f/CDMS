@@ -73,7 +73,7 @@ class CrowdEnsemble:
         for y in range(0, h - patch_size + 1, stride):
             for x in range(0, w - patch_size + 1, stride):
                 patch = frame[y:y+patch_size, x:x+patch_size]
-                _, count, _ = generate_density_map(
+                _, count, _, _fp = generate_density_map(
                     self.crowd_model, self.device, patch
                 )
                 total_count += count
@@ -109,6 +109,23 @@ class CrowdEnsemble:
         Selects and combines models based on scene analysis.
         """
         from backend.crowd_model import generate_density_map
+
+        # Ultra-dense check: YOLO is unreliable for dense crowds — bypass it entirely
+        is_ultra_dense = (
+            density_count > 200 or
+            crowd_mode in ('dense', 'mega') or
+            (crowd_mode == 'auto' and density_count > 150 and yolo_count < density_count * 0.1)
+        )
+        if is_ultra_dense:
+            perspective = self.detect_camera_angle(frame)
+            final = density_count * perspective
+            return {
+                "count":   round(final, 1),
+                "method":  "DENSITY_ULTRA",
+                "yolo":    yolo_count,
+                "density": density_count,
+                "note":    "Ultra-dense: YOLO bypassed, density model only"
+            }
 
         # Step 1: Camera angle correction
         perspective_factor = self.detect_camera_angle(frame)
