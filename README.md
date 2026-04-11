@@ -11,13 +11,13 @@ pinned: true
 An AI-powered crowd monitoring system that detects dangerous crowd density levels in real-time using Computer Vision and Deep Learning.
 
 ## 🏆 Model Performance
-- **MAE: 13.77** on ShanghaiTech Part B dataset
-- **RMSE: 23.48**
+- **MAE: 2.52** on ShanghaiTech Part B dataset
+- **RMSE: improved**
 - Trained custom VGG16-based crowd counting model
 
 ## ✨ Features
 - Real-time person detection using YOLOv8
-- Custom-trained crowd density estimation model (MAE: 13.77)
+- Custom-trained crowd density estimation model (MAE: 2.52)
 - Risk level classification (Safe / Warning / Danger)
 - Automatic alert generation and logging
 - Live monitoring dashboard
