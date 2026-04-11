@@ -6,7 +6,7 @@ from backend.report_generator import generate_incident_report
 from backend.email_alerts import send_danger_alert
 from backend.sms_alerts import send_sms_alert, send_surge_sms, get_sms_status
 from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from backend.detector import detect_people
@@ -88,6 +88,16 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 app.mount("/mobile", StaticFiles(directory="pwa"), name="pwa")
+
+# Serve React build at /app (old frontend remains at /)
+_react_dist = "frontend-react/dist"
+if os.path.exists(_react_dist):
+    app.mount("/assets", StaticFiles(directory=f"{_react_dist}/assets"), name="react-assets")
+
+@app.get("/app")
+@app.get("/app/{path:path}")
+async def serve_react(path: str = ""):
+    return FileResponse("frontend-react/dist/index.html")
 
 init_db()
 init_auth_tables()
