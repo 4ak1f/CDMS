@@ -89,15 +89,10 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 app.mount("/mobile", StaticFiles(directory="pwa"), name="pwa")
 
-# Serve React build at /app (old frontend remains at /)
-_react_dist = "frontend-react/dist"
-if os.path.exists(_react_dist):
-    app.mount("/assets", StaticFiles(directory=f"{_react_dist}/assets"), name="react-assets")
-
-@app.get("/app")
-@app.get("/app/{path:path}")
-async def serve_react(path: str = ""):
-    return FileResponse("frontend-react/dist/index.html")
+# Serve React build
+if os.path.exists("frontend-react/dist"):
+    app.mount("/assets", StaticFiles(
+        directory="frontend-react/dist/assets"), name="react-assets")
 
 init_db()
 init_auth_tables()
@@ -306,10 +301,24 @@ def process_frame(frame, crowd_mode="auto"):
     return annotated_frame, density_result, zones, alert, flow_result, confidence, inference_ms
 
 
-@app.get("/", response_class=HTMLResponse)
-def serve_dashboard():
-    with open("frontend/index.html", "r") as f:
-        return f.read()
+@app.get("/")
+async def serve_root():
+    return FileResponse("frontend-react/dist/index.html")
+
+@app.get("/{path:path}")
+async def serve_spa(path: str):
+    # Don't intercept API routes
+    api_prefixes = ("stats", "system", "history", "incidents", "alerts",
+        "calibration", "feedback", "zones", "location", "schedule", "thresholds",
+        "analyze", "session", "cloud", "anomaly", "deadman", "sms", "analytics",
+        "auth", "camera", "ngrok", "ws", "mobile", "static", "assets", "reports", "logs")
+    if path.split("/")[0] in api_prefixes:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404)
+    dist_file = f"frontend-react/dist/{path}"
+    if os.path.exists(dist_file) and os.path.isfile(dist_file):
+        return FileResponse(dist_file)
+    return FileResponse("frontend-react/dist/index.html")
 
 
 @app.post("/analyze/image")
