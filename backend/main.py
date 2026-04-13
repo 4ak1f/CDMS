@@ -918,7 +918,7 @@ async def create_camera_session():
     _current_session = session["code"]
     return {
         "code":       session["code"],
-        "join_url":   f"/camera/{session['code']}",
+        "join_url":   f"/camera/{session['code']}" ,
         "created_at": session["created_at"],
     }
 

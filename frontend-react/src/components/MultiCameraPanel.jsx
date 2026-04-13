@@ -65,7 +65,7 @@ export default function MultiCameraPanel({ onAggregateUpdate }) {
 
   const getJoinUrl = () => {
     if (publicUrl) return `${publicUrl}/camera/${session?.code}`
-    return `${window.location.protocol}//${window.location.hostname}:8000/camera/${session?.code}`
+    return `${window.location.protocol}//${window.location.host}/camera/${session?.code}`
   }
 
   const copyLink = () => {
